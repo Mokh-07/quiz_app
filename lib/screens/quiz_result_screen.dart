@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/quiz_result.dart';
 import '../services/quiz_provider.dart';
-import '../services/audio_service.dart';
+import '../services/simple_audio_service.dart';
 import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
 import '../widgets/custom_button.dart';
@@ -68,39 +68,16 @@ class _QuizResultScreenState extends State<QuizResultScreen>
     if (mounted) {
       _animationController.forward();
 
-      // Jouer l'annonce de fin de quiz
+      // Jouer le son de quiz terminé
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
-          AudioService().playQuizCompleteVocal(enabled: true);
+          SimpleAudioService().playCompleteSound();
         }
       });
 
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
           _scoreAnimationController.forward();
-        }
-      });
-
-      // Jouer un feedback vocal basé sur la performance
-      Future.delayed(const Duration(milliseconds: 2000), () {
-        if (mounted) {
-          final percentage = widget.result.percentage;
-          if (percentage >= 90) {
-            AudioService().playExcellentVocal(enabled: true);
-          } else if (percentage >= 70) {
-            AudioService().playGoodJobVocal(enabled: true);
-          } else {
-            AudioService().playTryAgainVocal(enabled: true);
-          }
-
-          // Si c'est un score élevé, jouer l'annonce spéciale
-          if (percentage >= 95) {
-            Future.delayed(const Duration(milliseconds: 1500), () {
-              if (mounted) {
-                AudioService().playHighScoreVocal(enabled: true);
-              }
-            });
-          }
         }
       });
     }
@@ -124,23 +101,26 @@ class _QuizResultScreenState extends State<QuizResultScreen>
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSizes.paddingLarge),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildResultHeader(),
-              const SizedBox(height: AppSizes.paddingLarge),
-              _buildScoreCard(),
-              const SizedBox(height: AppSizes.paddingLarge),
-              _buildStatsCards(),
-              const SizedBox(height: AppSizes.paddingLarge),
-              _buildQuestionReview(),
-              const SizedBox(height: AppSizes.paddingXLarge),
-              _buildActionButtons(),
-            ],
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSizes.paddingMedium),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildResultHeader(),
+                const SizedBox(height: AppSizes.paddingMedium),
+                _buildScoreCard(),
+                const SizedBox(height: AppSizes.paddingMedium),
+                _buildStatsCards(),
+                const SizedBox(height: AppSizes.paddingMedium),
+                _buildQuestionReview(),
+                const SizedBox(height: AppSizes.paddingLarge),
+                _buildActionButtons(),
+                const SizedBox(height: AppSizes.paddingMedium), // Espace en bas
+              ],
+            ),
           ),
         ),
       ),
@@ -151,10 +131,11 @@ class _QuizResultScreenState extends State<QuizResultScreen>
     return ScaleTransition(
       scale: _scaleAnimation,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color:
                   widget.result.isPassed ? AppColors.success : AppColors.error,
@@ -165,29 +146,30 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                           ? AppColors.success
                           : AppColors.error)
                       .withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
             child: Icon(
               widget.result.isPassed ? Icons.check : Icons.close,
-              size: 50,
+              size: 40,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: AppSizes.paddingMedium),
-          Text(
-            AppStrings.quizCompleted,
-            style: AppTextStyles.headline1,
-            textAlign: TextAlign.center,
-          ),
           const SizedBox(height: AppSizes.paddingSmall),
           Text(
+            AppStrings.quizCompleted,
+            style: AppTextStyles.headline2.copyWith(fontSize: 20),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSizes.paddingXSmall),
+          Text(
             widget.result.evaluation,
-            style: AppTextStyles.headline3.copyWith(
+            style: AppTextStyles.bodyText1.copyWith(
               color:
                   widget.result.isPassed ? AppColors.success : AppColors.error,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),
@@ -247,66 +229,94 @@ class _QuizResultScreenState extends State<QuizResultScreen>
       children: [
         Expanded(
           child: AppCard(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.check_circle,
-                  color: AppColors.success,
-                  size: AppSizes.iconSizeLarge,
-                ),
-                const SizedBox(height: AppSizes.paddingSmall),
-                Text(
-                  '${widget.result.score}',
-                  style: AppTextStyles.headline2.copyWith(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.paddingSmall),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.check_circle,
                     color: AppColors.success,
+                    size: AppSizes.iconSize,
                   ),
-                ),
-                Text('Correctes', style: AppTextStyles.bodyText2),
-              ],
+                  const SizedBox(height: AppSizes.paddingXSmall),
+                  Text(
+                    '${widget.result.score}',
+                    style: AppTextStyles.headline3.copyWith(
+                      color: AppColors.success,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    'Correctes',
+                    style: AppTextStyles.bodyText2.copyWith(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        const SizedBox(width: AppSizes.paddingMedium),
+        const SizedBox(width: AppSizes.paddingSmall),
         Expanded(
           child: AppCard(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.cancel,
-                  color: AppColors.error,
-                  size: AppSizes.iconSizeLarge,
-                ),
-                const SizedBox(height: AppSizes.paddingSmall),
-                Text(
-                  '${widget.result.incorrectAnswers}',
-                  style: AppTextStyles.headline2.copyWith(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.paddingSmall),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.cancel,
                     color: AppColors.error,
+                    size: AppSizes.iconSize,
                   ),
-                ),
-                Text('Incorrectes', style: AppTextStyles.bodyText2),
-              ],
+                  const SizedBox(height: AppSizes.paddingXSmall),
+                  Text(
+                    '${widget.result.incorrectAnswers}',
+                    style: AppTextStyles.headline3.copyWith(
+                      color: AppColors.error,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    'Incorrectes',
+                    style: AppTextStyles.bodyText2.copyWith(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        const SizedBox(width: AppSizes.paddingMedium),
+        const SizedBox(width: AppSizes.paddingSmall),
         Expanded(
           child: AppCard(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.timer,
-                  color: AppColors.primary,
-                  size: AppSizes.iconSizeLarge,
-                ),
-                const SizedBox(height: AppSizes.paddingSmall),
-                Text(
-                  _formatDuration(widget.result.timeTaken),
-                  style: AppTextStyles.headline3.copyWith(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.paddingSmall),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.timer,
                     color: AppColors.primary,
+                    size: AppSizes.iconSize,
                   ),
-                ),
-                Text('Temps', style: AppTextStyles.bodyText2),
-              ],
+                  const SizedBox(height: AppSizes.paddingXSmall),
+                  Text(
+                    _formatDuration(widget.result.timeTaken),
+                    style: AppTextStyles.bodyText1.copyWith(
+                      color: AppColors.primary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Temps',
+                    style: AppTextStyles.bodyText2.copyWith(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -321,73 +331,86 @@ class _QuizResultScreenState extends State<QuizResultScreen>
         children: [
           Text('Révision des questions', style: AppTextStyles.headline3),
           const SizedBox(height: AppSizes.paddingMedium),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: widget.result.questions.length,
-            separatorBuilder: (context, index) => const Divider(),
-            itemBuilder: (context, index) {
-              final question = widget.result.questions[index];
-              final userAnswer =
-                  index < widget.result.userAnswers.length
-                      ? widget.result.userAnswers[index]
-                      : '';
-              final isCorrect = question.isCorrectAnswer(userAnswer);
+          // Limiter la hauteur pour éviter l'overflow
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 300),
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: widget.result.questions.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final question = widget.result.questions[index];
+                final userAnswer =
+                    index < widget.result.userAnswers.length
+                        ? widget.result.userAnswers[index]
+                        : '';
+                final isCorrect = question.isCorrectAnswer(userAnswer);
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSizes.paddingSmall,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          isCorrect ? Icons.check_circle : Icons.cancel,
-                          color:
-                              isCorrect ? AppColors.success : AppColors.error,
-                          size: AppSizes.iconSize,
-                        ),
-                        const SizedBox(width: AppSizes.paddingSmall),
-                        Expanded(
-                          child: Text(
-                            'Question ${index + 1}',
-                            style: AppTextStyles.bodyText1.copyWith(
-                              fontWeight: FontWeight.bold,
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSizes.paddingXSmall,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            isCorrect ? Icons.check_circle : Icons.cancel,
+                            color:
+                                isCorrect ? AppColors.success : AppColors.error,
+                            size: AppSizes.iconSizeSmall,
+                          ),
+                          const SizedBox(width: AppSizes.paddingXSmall),
+                          Expanded(
+                            child: Text(
+                              'Question ${index + 1}',
+                              style: AppTextStyles.bodyText1.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSizes.paddingXSmall),
+                      Text(
+                        question.question,
+                        style: AppTextStyles.bodyText2.copyWith(fontSize: 13),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppSizes.paddingXSmall),
+                      if (!isCorrect) ...[
+                        Text(
+                          'Votre réponse: $userAnswer',
+                          style: AppTextStyles.bodyText2.copyWith(
+                            color: AppColors.error,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          'Bonne réponse: ${question.correctAnswer}',
+                          style: AppTextStyles.bodyText2.copyWith(
+                            color: AppColors.success,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          'Bonne réponse: ${question.correctAnswer}',
+                          style: AppTextStyles.bodyText2.copyWith(
+                            color: AppColors.success,
+                            fontSize: 12,
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: AppSizes.paddingSmall),
-                    Text(question.question, style: AppTextStyles.bodyText1),
-                    const SizedBox(height: AppSizes.paddingSmall),
-                    if (!isCorrect) ...[
-                      Text(
-                        'Votre réponse: $userAnswer',
-                        style: AppTextStyles.bodyText2.copyWith(
-                          color: AppColors.error,
-                        ),
-                      ),
-                      Text(
-                        'Bonne réponse: ${question.correctAnswer}',
-                        style: AppTextStyles.bodyText2.copyWith(
-                          color: AppColors.success,
-                        ),
-                      ),
-                    ] else ...[
-                      Text(
-                        'Bonne réponse: ${question.correctAnswer}',
-                        style: AppTextStyles.bodyText2.copyWith(
-                          color: AppColors.success,
-                        ),
-                      ),
                     ],
-                  ],
-                ),
-              );
-            },
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -397,19 +420,22 @@ class _QuizResultScreenState extends State<QuizResultScreen>
   Widget _buildActionButtons() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
         CustomButton(
           text: AppStrings.playAgain,
           icon: Icons.refresh,
           onPressed: _playAgain,
           backgroundColor: AppColors.primary,
+          height: 48, // Hauteur réduite
         ),
-        const SizedBox(height: AppSizes.paddingMedium),
+        const SizedBox(height: AppSizes.paddingSmall),
         CustomButton(
           text: AppStrings.backToHome,
           icon: Icons.home,
           onPressed: _backToHome,
           backgroundColor: AppColors.secondary,
+          height: 48, // Hauteur réduite
         ),
       ],
     );

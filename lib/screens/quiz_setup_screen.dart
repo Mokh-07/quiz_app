@@ -4,6 +4,8 @@ import '../services/quiz_provider.dart';
 import '../models/category.dart';
 import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
+import '../utils/difficulty_helper.dart';
+import '../l10n/app_localizations.dart';
 
 import '../widgets/custom_button.dart';
 import '../widgets/app_card.dart';
@@ -23,7 +25,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
-        title: const Text('Configuration du Quiz'),
+        title: Text(AppLocalizations.of(context).selectCategory),
         backgroundColor: ThemeHelper.getPrimaryColor(context),
         foregroundColor: ThemeHelper.getOnPrimaryColor(context),
         elevation: 0,
@@ -58,7 +60,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
             ),
             const SizedBox(height: AppSizes.paddingMedium),
             Text(
-              'Erreur de chargement',
+              AppLocalizations.of(context).error,
               style: ThemeHelper.getHeadlineStyle(context),
               textAlign: TextAlign.center,
             ),
@@ -70,7 +72,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
             ),
             const SizedBox(height: AppSizes.paddingLarge),
             CustomButton(
-              text: 'Réessayer',
+              text: AppLocalizations.of(context).retry,
               icon: Icons.refresh,
               onPressed: () => quizProvider.loadCategories(),
               backgroundColor: ThemeHelper.getPrimaryColor(context),
@@ -105,7 +107,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppStrings.selectCategory,
+            AppLocalizations.of(context).selectCategory,
             style: ThemeHelper.getHeadlineStyle(context),
           ),
           const SizedBox(height: AppSizes.paddingMedium),
@@ -148,7 +150,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppStrings.selectDifficulty,
+            AppLocalizations.of(context).selectDifficulty,
             style: ThemeHelper.getHeadlineStyle(context),
           ),
           const SizedBox(height: AppSizes.paddingMedium),
@@ -192,7 +194,10 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
                                     ),
                           ),
                           child: Text(
-                            difficulty.displayName,
+                            DifficultyHelper.getDisplayName(
+                              context,
+                              difficulty,
+                            ),
                             style: ThemeHelper.getBodyStyle(context).copyWith(
                               color:
                                   isSelected
@@ -228,7 +233,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
 
   Widget _buildStartButton(QuizProvider quizProvider) {
     return CustomButton(
-      text: AppStrings.startQuizButton,
+      text: AppLocalizations.of(context).start,
       icon: Icons.play_arrow,
       onPressed: () => _startQuiz(quizProvider),
       backgroundColor: ThemeHelper.getCorrectAnswerColor(context),

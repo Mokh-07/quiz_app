@@ -4,13 +4,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../services/quiz_provider.dart';
 import '../services/settings_service.dart';
-import '../services/audio_service.dart';
+
 import '../services/haptic_service.dart';
 import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
 import '../utils/icon_helper.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_card.dart';
+import '../widgets/language_button.dart';
+import '../l10n/app_localizations.dart';
 import 'quiz_setup_screen.dart';
 import 'history_screen.dart';
 import 'about_screen.dart';
@@ -53,13 +55,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     _animationController.forward();
-
-    // Jouer le message de bienvenue après un délai
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      if (mounted) {
-        AudioService().playWelcomeVocal(enabled: true);
-      }
-    });
   }
 
   void _loadInitialData() {
@@ -80,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quiz App'),
+        title: Text(AppLocalizations.of(context).appTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -103,18 +98,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                   await settings.setThemeMode(newMode);
 
-                  // Feedback haptique et sonore
+                  // Feedback haptique
                   await HapticService().selectionVibration(
                     enabled: settings.vibrationEnabled,
-                  );
-                  await AudioService().playSelectionSound(
-                    enabled: settings.soundEnabled,
                   );
                 },
                 tooltip: 'Changer le thème',
               );
             },
           ),
+          const CompactLanguageButton(),
           IconButton(
             icon: Icon(IconHelper.getUIIcon('settings')),
             onPressed: () => _navigateToSettings(),
@@ -213,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     context,
                   ).createShader(bounds),
               child: Text(
-                AppStrings.welcomeTitle,
+                AppLocalizations.of(context).welcomeTitle,
                 style: ThemeHelper.getHeadlineStyle(context).copyWith(
                   fontSize: 36,
                   fontWeight: FontWeight.w900,
@@ -229,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(height: AppSizes.paddingSmall),
 
         Text(
-              AppStrings.welcomeSubtitle,
+              AppLocalizations.of(context).welcomeSubtitle,
               style: ThemeHelper.getSecondaryTextStyle(
                 context,
               ).copyWith(fontSize: 18),
@@ -247,18 +240,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 _buildFeatureHighlight(
                   icon: IconHelper.getUIIcon('quiz'),
-                  title: '20+ Catégories',
-                  subtitle: 'Variées',
+                  title: '20+ ${AppLocalizations.of(context).categories}',
+                  subtitle: AppLocalizations.of(context).varied,
                 ),
                 _buildFeatureHighlight(
                   icon: IconHelper.getUIIcon('timer'),
-                  title: 'Rapide & Fun',
-                  subtitle: 'Questions',
+                  title: AppLocalizations.of(context).quickFun,
+                  subtitle: AppLocalizations.of(context).questions,
                 ),
                 _buildFeatureHighlight(
                   icon: IconHelper.getUIIcon('score'),
-                  title: 'Suivi Progrès',
-                  subtitle: 'Personnel',
+                  title: AppLocalizations.of(context).progressTracking,
+                  subtitle: AppLocalizations.of(context).personal,
                 ),
               ],
             )
@@ -283,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: AppCard(
                   gradient: AppColors.primaryGradient,
                   child: CustomButton(
-                    text: AppStrings.startQuiz,
+                    text: AppLocalizations.of(context).startQuiz,
                     icon: IconHelper.getUIIcon('start'),
                     onPressed: () => _navigateToQuizSetup(),
                     backgroundColor: Colors.transparent,
@@ -309,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: AppCard(
                         gradient: AppColors.secondaryGradient,
                         child: CustomButton(
-                          text: AppStrings.viewHistory,
+                          text: AppLocalizations.of(context).viewHistory,
                           icon: IconHelper.getUIIcon('history'),
                           onPressed: () => _navigateToHistory(),
                           backgroundColor: Colors.transparent,
@@ -322,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: AppCard(
                         gradient: AppColors.accentGradient,
                         child: CustomButton(
-                          text: AppStrings.about,
+                          text: AppLocalizations.of(context).about,
                           icon: IconHelper.getUIIcon('about'),
                           onPressed: () => _navigateToAbout(),
                           backgroundColor: Colors.transparent,
@@ -360,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       const SizedBox(width: AppSizes.paddingSmall),
                       Text(
-                        'Dernier quiz',
+                        AppLocalizations.of(context).lastQuiz,
                         style: ThemeHelper.getHeadlineStyle(context),
                       ),
                     ],
@@ -490,11 +483,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _navigateToSettings() async {
     final settings = Provider.of<SettingsService>(context, listen: false);
 
-    // Feedback haptique et sonore
+    // Feedback haptique
     await HapticService().selectionVibration(
       enabled: settings.vibrationEnabled,
     );
-    await AudioService().playSelectionSound(enabled: settings.soundEnabled);
 
     if (mounted) {
       Navigator.of(

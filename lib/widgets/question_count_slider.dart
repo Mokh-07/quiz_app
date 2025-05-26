@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
+import '../l10n/app_localizations.dart';
 
 class QuestionCountSlider extends StatefulWidget {
   final int initialValue;
@@ -82,7 +83,7 @@ class _QuestionCountSliderState extends State<QuestionCountSlider>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Nombre de questions',
+                AppLocalizations.of(context).numberOfQuestions,
                 style: ThemeHelper.getHeadlineStyle(context),
               ),
               AnimatedBuilder(

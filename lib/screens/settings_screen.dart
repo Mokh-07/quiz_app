@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
-import '../services/audio_service.dart';
+
 import '../services/haptic_service.dart';
 import '../utils/constants.dart';
 import '../widgets/app_card.dart';
+import '../widgets/audio_test_widget.dart';
+import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -25,13 +27,6 @@ class SettingsScreen extends StatelessWidget {
                 _buildSectionTitle(context, 'Apparence'),
                 const SizedBox(height: AppSizes.paddingMedium),
                 _buildThemeCard(context, settings),
-
-                const SizedBox(height: AppSizes.paddingLarge),
-
-                // Section Audio
-                _buildSectionTitle(context, 'Audio'),
-                const SizedBox(height: AppSizes.paddingMedium),
-                _buildAudioCard(context, settings),
 
                 const SizedBox(height: AppSizes.paddingLarge),
 
@@ -102,46 +97,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAudioCard(BuildContext context, SettingsService settings) {
-    return AppCard(
-      child: Column(
-        children: [
-          SwitchListTile(
-            secondary: Icon(
-              settings.soundEnabled ? Icons.volume_up : Icons.volume_off,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: const Text('Effets sonores'),
-            subtitle: const Text('Sons de sélection, succès et erreur'),
-            value: settings.soundEnabled,
-            onChanged: (bool value) async {
-              await settings.setSoundEnabled(value);
-
-              // Jouer un son de test si activé
-              if (value) {
-                await AudioService().playSelectionSound(enabled: true);
-              }
-
-              // Feedback haptique
-              await HapticService().selectionVibration(
-                enabled: settings.vibrationEnabled,
-              );
-            },
-          ),
-          if (settings.soundEnabled) ...[
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.play_arrow),
-              title: const Text('Tester les sons'),
-              subtitle: const Text('Écouter les différents effets sonores'),
-              onTap: () => _showSoundTestDialog(context, settings),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildVibrationCard(BuildContext context, SettingsService settings) {
     return AppCard(
       child: Column(
@@ -185,6 +140,16 @@ class SettingsScreen extends StatelessWidget {
         children: [
           ListTile(
             leading: Icon(
+              Icons.volume_up,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: const Text('Test Audio'),
+            subtitle: const Text('Tester les effets sonores de l\'application'),
+            onTap: () => _showAudioTestDialog(context),
+          ),
+          const Divider(),
+          ListTile(
+            leading: Icon(
               Icons.refresh,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -197,46 +162,16 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showSoundTestDialog(BuildContext context, SettingsService settings) {
+  void _showAudioTestDialog(BuildContext context) {
     showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: const Text('Test des sons'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildSoundTestButton('Sélection', () async {
-                  await AudioService().playSelectionSound(enabled: true);
-                }),
-                _buildSoundTestButton('Succès', () async {
-                  await AudioService().playCorrectSound(enabled: true);
-                }),
-                _buildSoundTestButton('Erreur', () async {
-                  await AudioService().playIncorrectSound(enabled: true);
-                }),
-                _buildSoundTestButton('Fin de quiz', () async {
-                  await AudioService().playCompletionSound(enabled: true);
-                }),
-              ],
+          (context) => Dialog(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
+              child: const AudioTestWidget(),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Fermer'),
-              ),
-            ],
           ),
-    );
-  }
-
-  Widget _buildSoundTestButton(String label, VoidCallback onPressed) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(onPressed: onPressed, child: Text(label)),
-      ),
     );
   }
 

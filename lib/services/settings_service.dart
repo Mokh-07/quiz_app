@@ -4,26 +4,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Service pour gérer les paramètres utilisateur
 class SettingsService extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
-  static const String _soundEnabledKey = 'sound_enabled';
   static const String _vibrationEnabledKey = 'vibration_enabled';
 
   late SharedPreferences _prefs;
-  
+
   // État des paramètres
   ThemeMode _themeMode = ThemeMode.system;
-  bool _soundEnabled = true;
   bool _vibrationEnabled = true;
   bool _isInitialized = false;
 
   // Getters
   ThemeMode get themeMode => _themeMode;
-  bool get soundEnabled => _soundEnabled;
   bool get vibrationEnabled => _vibrationEnabled;
   bool get isInitialized => _isInitialized;
-  
+
   bool get isDarkMode {
     if (_themeMode == ThemeMode.system) {
-      return WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
+      return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark;
     }
     return _themeMode == ThemeMode.dark;
   }
@@ -42,8 +40,7 @@ class SettingsService extends ChangeNotifier {
     final themeIndex = _prefs.getInt(_themeKey) ?? ThemeMode.system.index;
     _themeMode = ThemeMode.values[themeIndex];
 
-    // Charger les préférences audio et vibration
-    _soundEnabled = _prefs.getBool(_soundEnabledKey) ?? true;
+    // Charger les préférences de vibration
     _vibrationEnabled = _prefs.getBool(_vibrationEnabledKey) ?? true;
   }
 
@@ -52,15 +49,6 @@ class SettingsService extends ChangeNotifier {
     if (_themeMode != mode) {
       _themeMode = mode;
       await _prefs.setInt(_themeKey, mode.index);
-      notifyListeners();
-    }
-  }
-
-  /// Active/désactive les sons
-  Future<void> setSoundEnabled(bool enabled) async {
-    if (_soundEnabled != enabled) {
-      _soundEnabled = enabled;
-      await _prefs.setBool(_soundEnabledKey, enabled);
       notifyListeners();
     }
   }
@@ -77,13 +65,11 @@ class SettingsService extends ChangeNotifier {
   /// Remet tous les paramètres à leurs valeurs par défaut
   Future<void> resetToDefaults() async {
     _themeMode = ThemeMode.system;
-    _soundEnabled = true;
     _vibrationEnabled = true;
-    
+
     await _prefs.setInt(_themeKey, _themeMode.index);
-    await _prefs.setBool(_soundEnabledKey, _soundEnabled);
     await _prefs.setBool(_vibrationEnabledKey, _vibrationEnabled);
-    
+
     notifyListeners();
   }
 

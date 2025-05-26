@@ -4,12 +4,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:async';
 import '../services/quiz_provider.dart';
 import '../services/settings_service.dart';
-import '../services/audio_service.dart';
+
 import '../services/haptic_service.dart';
+import '../services/simple_audio_service.dart';
 import '../models/question.dart';
 import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
 import '../widgets/app_card.dart';
+import '../l10n/app_localizations.dart';
 import 'quiz_result_screen.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -110,18 +112,16 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
 
         if (isCorrect) {
           // Réponse correcte
-          await AudioService().playCorrectSound(enabled: settings.soundEnabled);
           await HapticService().successVibration(
             enabled: settings.vibrationEnabled,
           );
+          await SimpleAudioService().playCorrectSound();
         } else {
           // Réponse incorrecte
-          await AudioService().playIncorrectSound(
-            enabled: settings.soundEnabled,
-          );
           await HapticService().errorVibration(
             enabled: settings.vibrationEnabled,
           );
+          await SimpleAudioService().playWrongSound();
         }
       } else {
         // Temps écoulé - vibration d'avertissement
@@ -163,7 +163,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
-        title: const Text('Quiz'),
+        title: Text(AppLocalizations.of(context).question),
         backgroundColor: ThemeHelper.getPrimaryColor(context),
         foregroundColor: ThemeHelper.getOnPrimaryColor(context),
         elevation: 0,
@@ -248,7 +248,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Question ${quizProvider.currentQuestionIndex + 1}',
+                '${AppLocalizations.of(context).question} ${quizProvider.currentQuestionIndex + 1}',
                 style: ThemeHelper.getBodyStyle(
                   context,
                 ).copyWith(fontWeight: FontWeight.bold),
@@ -288,7 +288,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
                       .shake(duration: 500.ms),
                   const SizedBox(width: AppSizes.paddingSmall),
                   Text(
-                    '${quizProvider.currentQuestionIndex + 1}/${quizProvider.questions.length}',
+                    '${quizProvider.currentQuestionIndex + 1} ${AppLocalizations.of(context).ofText} ${quizProvider.questions.length}',
                     style: AppTextStyles.bodyText2.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -437,7 +437,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
               ),
               const SizedBox(width: AppSizes.paddingSmall),
               Text(
-                AppStrings.multipleChoiceQuestion,
+                'Multiple Choice', // Sera traduit plus tard
                 style: ThemeHelper.getBodyStyle(context).copyWith(
                   color: ThemeHelper.getPrimaryColor(context),
                   fontWeight: FontWeight.bold,
@@ -474,7 +474,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
                 ),
                 const SizedBox(width: AppSizes.paddingSmall),
                 Text(
-                  AppStrings.chooseOneAnswer,
+                  'Choose ONE answer', // Sera traduit plus tard
                   style: ThemeHelper.getBodyStyle(context).copyWith(
                     color: ThemeHelper.getPrimaryColor(context),
                     fontWeight: FontWeight.w600,
@@ -517,7 +517,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
               ),
               const SizedBox(width: AppSizes.paddingSmall),
               Text(
-                '${AppStrings.answerOptions} (${question.allAnswers.length})',
+                'Answer Options (${question.allAnswers.length})', // Sera traduit plus tard
                 style: ThemeHelper.getBodyStyle(context).copyWith(
                   color: ThemeHelper.getSecondaryColor(context),
                   fontWeight: FontWeight.w600,
@@ -716,8 +716,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
         _selectedAnswer = answer;
       });
 
-      // Feedback immédiat : son et vibration de sélection
-      await AudioService().playSelectionSound(enabled: settings.soundEnabled);
+      // Feedback immédiat : vibration de sélection
       await HapticService().selectionVibration(
         enabled: settings.vibrationEnabled,
       );
@@ -744,12 +743,6 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
 
   void _navigateToResults(QuizProvider quizProvider) async {
     try {
-      // Obtenir les paramètres utilisateur
-      final settings = Provider.of<SettingsService>(context, listen: false);
-
-      // Son de fin de quiz
-      await AudioService().playCompletionSound(enabled: settings.soundEnabled);
-
       final result = await quizProvider.completeQuiz();
 
       if (mounted) {

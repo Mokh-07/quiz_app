@@ -2,25 +2,16 @@ class QuizCategory {
   final int id;
   final String name;
 
-  const QuizCategory({
-    required this.id,
-    required this.name,
-  });
+  const QuizCategory({required this.id, required this.name});
 
   // Factory constructor pour créer une catégorie à partir d'un JSON
   factory QuizCategory.fromJson(Map<String, dynamic> json) {
-    return QuizCategory(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-    );
+    return QuizCategory(id: json['id'] ?? 0, name: json['name'] ?? '');
   }
 
   // Convertit la catégorie en JSON
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
+    return {'id': id, 'name': name};
   }
 
   @override
@@ -41,20 +32,33 @@ class QuizCategory {
 
 // Énumération pour les niveaux de difficulté
 enum Difficulty {
-  easy('easy', 'Facile'),
-  medium('medium', 'Moyen'),
-  hard('hard', 'Difficile');
+  easy('easy'),
+  medium('medium'),
+  hard('hard');
 
-  const Difficulty(this.value, this.displayName);
+  const Difficulty(this.value);
 
   final String value;
-  final String displayName;
 
   static Difficulty fromString(String value) {
     return Difficulty.values.firstWhere(
       (difficulty) => difficulty.value == value,
       orElse: () => Difficulty.easy,
     );
+  }
+}
+
+// Extension pour obtenir le nom traduit de la difficulté
+extension DifficultyExtension on Difficulty {
+  String get displayName {
+    switch (this) {
+      case Difficulty.easy:
+        return 'Facile';
+      case Difficulty.medium:
+        return 'Moyen';
+      case Difficulty.hard:
+        return 'Difficile';
+    }
   }
 }
 

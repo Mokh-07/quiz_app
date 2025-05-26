@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../utils/constants.dart';
+import '../utils/theme_helper.dart';
+import '../utils/icon_helper.dart';
 import '../widgets/app_card.dart';
+import '../widgets/language_button.dart';
+import '../l10n/app_localizations.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -8,76 +14,107 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
-        title: const Text(AppStrings.about),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        title: Text(AppLocalizations.of(context).aboutApp),
+        backgroundColor: ThemeHelper.getPrimaryColor(context),
+        foregroundColor: ThemeHelper.getOnPrimaryColor(context),
         elevation: 0,
+        actions: [const CompactLanguageButton()],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSizes.paddingLarge),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildAppInfo(),
-            const SizedBox(height: AppSizes.paddingLarge),
-            _buildFeatures(),
-            const SizedBox(height: AppSizes.paddingLarge),
-            _buildApiInfo(),
-            const SizedBox(height: AppSizes.paddingLarge),
-            _buildDeveloperInfo(),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: ThemeHelper.getBackgroundGradient(context),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSizes.paddingLarge),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildAppInfo(context),
+              const SizedBox(height: AppSizes.paddingLarge),
+              _buildFeatures(context),
+              const SizedBox(height: AppSizes.paddingLarge),
+              _buildApiInfo(context),
+              const SizedBox(height: AppSizes.paddingLarge),
+              _buildTechnicalInfo(context),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildAppInfo() {
+  Widget _buildAppInfo(BuildContext context) {
     return AppCard(
       child: Column(
         children: [
           Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(40),
-            ),
-            child: const Icon(
-              Icons.quiz,
-              size: 40,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: AppSizes.paddingMedium),
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: ThemeHelper.getPrimaryGradient(context),
+                  borderRadius: BorderRadius.circular(50),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeHelper.getPrimaryColor(
+                        context,
+                      ).withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  IconHelper.getUIIcon('quiz'),
+                  size: 50,
+                  color: ThemeHelper.getOnPrimaryColor(context),
+                ),
+              )
+              .animate()
+              .scale(duration: 800.ms, curve: Curves.elasticOut)
+              .shimmer(duration: 2000.ms),
+
+          const SizedBox(height: AppSizes.paddingLarge),
           Text(
-            AppStrings.appName,
-            style: AppTextStyles.headline1,
+            AppLocalizations.of(context).appTitle,
+            style: ThemeHelper.getHeadlineStyle(
+              context,
+            ).copyWith(fontSize: 28, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSizes.paddingSmall),
           Text(
-            AppStrings.appDescription,
-            style: AppTextStyles.bodyText2,
+            AppLocalizations.of(context).appDescription,
+            style: ThemeHelper.getSecondaryTextStyle(context),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSizes.paddingMedium),
+          const SizedBox(height: AppSizes.paddingLarge),
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.paddingMedium,
-              vertical: AppSizes.paddingSmall,
+              horizontal: AppSizes.paddingLarge,
+              vertical: AppSizes.paddingMedium,
             ),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              gradient: ThemeHelper.getSuccessGradient(context),
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
             ),
-            child: Text(
-              'Version 1.0.0',
-              style: AppTextStyles.bodyText1.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.verified,
+                  color: Colors.white,
+                  size: AppSizes.iconSize,
+                ),
+                const SizedBox(width: AppSizes.paddingSmall),
+                Text(
+                  '${AppLocalizations.of(context).version} 1.0.0',
+                  style: ThemeHelper.getBodyStyle(
+                    context,
+                  ).copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
           ),
         ],
@@ -85,64 +122,86 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatures() {
+  Widget _buildFeatures(BuildContext context) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Fonctionnalités',
-            style: AppTextStyles.headline3,
+          Row(
+            children: [
+              Icon(
+                IconHelper.getUIIcon('features'),
+                color: ThemeHelper.getPrimaryColor(context),
+                size: AppSizes.iconSizeLarge,
+              ),
+              const SizedBox(width: AppSizes.paddingMedium),
+              Text(
+                AppLocalizations.of(context).features,
+                style: ThemeHelper.getHeadlineStyle(context),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSizes.paddingMedium),
+          const SizedBox(height: AppSizes.paddingLarge),
           _buildFeatureItem(
-            Icons.category,
-            'Catégories variées',
-            'Questions sur différents sujets : sciences, histoire, divertissement, etc.',
-          ),
-          _buildFeatureItem(
-            Icons.speed,
-            'Niveaux de difficulté',
-            'Choisissez entre facile, moyen et difficile selon votre niveau.',
-          ),
-          _buildFeatureItem(
-            Icons.quiz,
-            'Questions en temps réel',
-            'Questions récupérées en direct depuis l\'API OpenTDB.',
-          ),
-          _buildFeatureItem(
-            Icons.assessment,
-            'Suivi des performances',
-            'Historique détaillé de vos résultats et statistiques.',
+            context,
+            IconHelper.getCategoryIcon('General Knowledge'),
+            AppLocalizations.of(context).multipleCategories,
+            '20+ ${AppLocalizations.of(context).categories.toLowerCase()}',
           ),
           _buildFeatureItem(
-            Icons.timer,
-            'Interface intuitive',
-            'Design moderne et expérience utilisateur optimisée.',
+            context,
+            IconHelper.getUIIcon('difficulty'),
+            AppLocalizations.of(context).difficultyLevels,
+            '${AppLocalizations.of(context).easy}, ${AppLocalizations.of(context).medium}, ${AppLocalizations.of(context).hard}',
+          ),
+          _buildFeatureItem(
+            context,
+            Icons.volume_up,
+            AppLocalizations.of(context).audioFeedback,
+            AppLocalizations.of(context).soundEffects,
+          ),
+          _buildFeatureItem(
+            context,
+            Icons.language,
+            AppLocalizations.of(context).multiLanguage,
+            'Français, English, العربية, Español',
+          ),
+          _buildFeatureItem(
+            context,
+            IconHelper.getUIIcon('theme_dark'),
+            AppLocalizations.of(context).darkModeSupport,
+            AppLocalizations.of(context).theme,
+          ),
+          _buildFeatureItem(
+            context,
+            IconHelper.getUIIcon('history'),
+            AppLocalizations.of(context).progressTracking,
+            AppLocalizations.of(context).viewHistory,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String title, String description) {
+  Widget _buildFeatureItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String description,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.paddingMedium),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              gradient: ThemeHelper.getPrimaryGradient(context),
+              borderRadius: BorderRadius.circular(24),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: AppSizes.iconSize,
-            ),
+            child: Icon(icon, color: Colors.white, size: AppSizes.iconSize),
           ),
           const SizedBox(width: AppSizes.paddingMedium),
           Expanded(
@@ -151,14 +210,14 @@ class AboutScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.bodyText1.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: ThemeHelper.getBodyStyle(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: AppTextStyles.bodyText2,
+                  style: ThemeHelper.getSecondaryTextStyle(context),
                 ),
               ],
             ),
@@ -168,7 +227,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildApiInfo() {
+  Widget _buildApiInfo(BuildContext context) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,61 +236,68 @@ class AboutScreen extends StatelessWidget {
             children: [
               Icon(
                 Icons.api,
-                color: AppColors.secondary,
+                color: ThemeHelper.getSecondaryColor(context),
                 size: AppSizes.iconSizeLarge,
               ),
               const SizedBox(width: AppSizes.paddingMedium),
               Text(
-                'API utilisée',
-                style: AppTextStyles.headline3,
+                AppLocalizations.of(context).apiInformation,
+                style: ThemeHelper.getHeadlineStyle(context),
               ),
             ],
           ),
+          const SizedBox(height: AppSizes.paddingLarge),
+          Text(
+            AppLocalizations.of(context).apiDescription,
+            style: ThemeHelper.getBodyStyle(context),
+          ),
+          const SizedBox(height: AppSizes.paddingLarge),
+
+          // API Provider
+          _buildInfoRow(
+            context,
+            Icons.business,
+            AppLocalizations.of(context).apiProvider,
+            'Open Trivia Database',
+          ),
+
+          // Website
+          _buildInfoRow(
+            context,
+            Icons.link,
+            AppLocalizations.of(context).apiWebsite,
+            'https://opentdb.com',
+            isLink: true,
+          ),
+
           const SizedBox(height: AppSizes.paddingMedium),
           Text(
-            'Open Trivia Database (OpenTDB)',
-            style: AppTextStyles.bodyText1.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            AppLocalizations.of(context).apiFeatures,
+            style: ThemeHelper.getBodyStyle(
+              context,
+            ).copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: AppSizes.paddingSmall),
-          Text(
-            'Cette application utilise l\'API gratuite OpenTDB pour récupérer les questions de quiz. OpenTDB est une base de données collaborative de questions de culture générale.',
-            style: AppTextStyles.bodyText2,
+
+          _buildFeatureChip(context, AppLocalizations.of(context).freeToUse),
+          _buildFeatureChip(
+            context,
+            AppLocalizations.of(context).noRegistration,
           ),
-          const SizedBox(height: AppSizes.paddingMedium),
-          Container(
-            padding: const EdgeInsets.all(AppSizes.paddingMedium),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.link,
-                  color: AppColors.secondary,
-                  size: AppSizes.iconSize,
-                ),
-                const SizedBox(width: AppSizes.paddingSmall),
-                Expanded(
-                  child: Text(
-                    'https://opentdb.com',
-                    style: AppTextStyles.bodyText2.copyWith(
-                      color: AppColors.secondary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          _buildFeatureChip(
+            context,
+            AppLocalizations.of(context).regularUpdates,
+          ),
+          _buildFeatureChip(
+            context,
+            AppLocalizations.of(context).qualityQuestions,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDeveloperInfo() {
+  Widget _buildTechnicalInfo(BuildContext context) {
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,33 +306,123 @@ class AboutScreen extends StatelessWidget {
             children: [
               Icon(
                 Icons.code,
-                color: AppColors.warning,
+                color: ThemeHelper.getSecondaryColor(context),
                 size: AppSizes.iconSizeLarge,
               ),
               const SizedBox(width: AppSizes.paddingMedium),
               Text(
-                'Développement',
-                style: AppTextStyles.headline3,
+                AppLocalizations.of(context).technicalInfo,
+                style: ThemeHelper.getHeadlineStyle(context),
               ),
             ],
           ),
-          const SizedBox(height: AppSizes.paddingMedium),
+          const SizedBox(height: AppSizes.paddingLarge),
+
           Text(
-            'Cette application a été développée avec Flutter, le framework de développement mobile de Google.',
-            style: AppTextStyles.bodyText2,
+            AppLocalizations.of(context).builtWith,
+            style: ThemeHelper.getBodyStyle(
+              context,
+            ).copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: AppSizes.paddingMedium),
-          _buildTechItem('Flutter', 'Framework de développement cross-platform'),
-          _buildTechItem('Dart', 'Langage de programmation'),
-          _buildTechItem('Provider', 'Gestion d\'état'),
-          _buildTechItem('HTTP', 'Requêtes API'),
-          _buildTechItem('SharedPreferences', 'Stockage local'),
+
+          _buildTechItem(context, 'Flutter', 'Cross-platform framework'),
+          _buildTechItem(context, 'Dart', 'Programming language'),
+          _buildTechItem(context, 'Provider', 'State management'),
+          _buildTechItem(context, 'Material Design 3', 'UI design system'),
+          _buildTechItem(context, 'Shared Preferences', 'Local storage'),
+
+          const SizedBox(height: AppSizes.paddingLarge),
+
+          Row(
+            children: [
+              Icon(Icons.person, color: ThemeHelper.getSecondaryColor(context)),
+              const SizedBox(width: AppSizes.paddingSmall),
+              Text(
+                AppLocalizations.of(context).developer,
+                style: ThemeHelper.getBodyStyle(
+                  context,
+                ).copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTechItem(String name, String description) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    bool isLink = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSizes.paddingSmall),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: ThemeHelper.getSecondaryColor(context),
+            size: AppSizes.iconSize,
+          ),
+          const SizedBox(width: AppSizes.paddingSmall),
+          Text(
+            '$label: ',
+            style: ThemeHelper.getBodyStyle(
+              context,
+            ).copyWith(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: isLink ? () => _launchUrl(value) : null,
+              child: Text(
+                value,
+                style: ThemeHelper.getBodyStyle(context).copyWith(
+                  color: isLink ? ThemeHelper.getSecondaryColor(context) : null,
+                  decoration: isLink ? TextDecoration.underline : null,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureChip(BuildContext context, String text) {
+    return Container(
+      margin: const EdgeInsets.only(
+        right: AppSizes.paddingSmall,
+        bottom: AppSizes.paddingSmall,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.paddingMedium,
+        vertical: AppSizes.paddingSmall,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.green.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle, color: Colors.green, size: 16),
+          const SizedBox(width: AppSizes.paddingXSmall),
+          Text(
+            text,
+            style: ThemeHelper.getBodyStyle(
+              context,
+            ).copyWith(color: Colors.green, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTechItem(BuildContext context, String name, String description) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.paddingSmall),
       child: Row(
@@ -275,26 +431,33 @@ class AboutScreen extends StatelessWidget {
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: AppColors.warning,
+              color: ThemeHelper.getSecondaryColor(context),
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: AppSizes.paddingSmall),
           Text(
             name,
-            style: AppTextStyles.bodyText1.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: ThemeHelper.getBodyStyle(
+              context,
+            ).copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(width: AppSizes.paddingSmall),
           Expanded(
             child: Text(
               '- $description',
-              style: AppTextStyles.bodyText2,
+              style: ThemeHelper.getSecondaryTextStyle(context),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
   }
 }
