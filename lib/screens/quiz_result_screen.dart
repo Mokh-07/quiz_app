@@ -11,8 +11,13 @@ import 'quiz_setup_screen.dart';
 
 class QuizResultScreen extends StatefulWidget {
   final QuizResult result;
+  final bool isNewRecord;
 
-  const QuizResultScreen({super.key, required this.result});
+  const QuizResultScreen({
+    super.key,
+    required this.result,
+    this.isNewRecord = false,
+  });
 
   @override
   State<QuizResultScreen> createState() => _QuizResultScreenState();
@@ -109,6 +114,10 @@ class _QuizResultScreenState extends State<QuizResultScreen>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildResultHeader(),
+                if (widget.isNewRecord) ...[
+                  const SizedBox(height: AppSizes.paddingMedium),
+                  _buildNewRecordBanner(),
+                ],
                 const SizedBox(height: AppSizes.paddingMedium),
                 _buildScoreCard(),
                 const SizedBox(height: AppSizes.paddingMedium),
@@ -173,6 +182,70 @@ class _QuizResultScreenState extends State<QuizResultScreen>
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNewRecordBanner() {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: Container(
+        padding: const EdgeInsets.all(AppSizes.paddingMedium),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.amber.shade400, Colors.orange.shade400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.amber.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.emoji_events,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: AppSizes.paddingMedium),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🎉 NOUVEAU RECORD !',
+                    style: AppTextStyles.headline3.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Félicitations ! Vous avez établi un nouveau meilleur score pour cette catégorie et difficulté.',
+                    style: AppTextStyles.bodyText2.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

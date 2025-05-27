@@ -645,7 +645,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
 
   void _navigateToResults(QuizProvider quizProvider) async {
     try {
-      final result = await quizProvider.completeQuiz();
+      final (result, isNewRecord) = await quizProvider.completeQuiz();
 
       if (mounted) {
         // Attendre un court délai pour s'assurer que l'état est stable
@@ -654,7 +654,11 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => QuizResultScreen(result: result),
+              builder:
+                  (context) => QuizResultScreen(
+                    result: result,
+                    isNewRecord: isNewRecord,
+                  ),
             ),
           );
         }

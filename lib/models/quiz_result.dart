@@ -2,6 +2,7 @@ import 'question.dart';
 import 'category.dart';
 
 class QuizResult {
+  final String id;
   final List<Question> questions;
   final List<String> userAnswers;
   final int score;
@@ -12,6 +13,7 @@ class QuizResult {
   final Duration timeTaken;
 
   QuizResult({
+    String? id,
     required this.questions,
     required this.userAnswers,
     required this.score,
@@ -20,10 +22,13 @@ class QuizResult {
     required this.difficulty,
     required this.completedAt,
     required this.timeTaken,
-  });
+  }) : id =
+           id ??
+           '${completedAt.millisecondsSinceEpoch}_${category}_${difficulty.value}';
 
   // Calcule le pourcentage de réussite
-  double get percentage => totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+  double get percentage =>
+      totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
 
   // Retourne le nombre de réponses incorrectes
   int get incorrectAnswers => totalQuestions - score;
@@ -44,11 +49,14 @@ class QuizResult {
   // Factory constructor pour créer un QuizResult à partir d'un JSON
   factory QuizResult.fromJson(Map<String, dynamic> json) {
     return QuizResult(
-      questions: (json['questions'] as List<dynamic>?)
+      id: json['id'],
+      questions:
+          (json['questions'] as List<dynamic>?)
               ?.map((q) => Question.fromJson(q))
               .toList() ??
           [],
-      userAnswers: (json['user_answers'] as List<dynamic>?)
+      userAnswers:
+          (json['user_answers'] as List<dynamic>?)
               ?.map((answer) => answer.toString())
               .toList() ??
           [],
@@ -56,7 +64,9 @@ class QuizResult {
       totalQuestions: json['total_questions'] ?? 0,
       category: json['category'] ?? '',
       difficulty: Difficulty.fromString(json['difficulty'] ?? 'easy'),
-      completedAt: DateTime.parse(json['completed_at'] ?? DateTime.now().toIso8601String()),
+      completedAt: DateTime.parse(
+        json['completed_at'] ?? DateTime.now().toIso8601String(),
+      ),
       timeTaken: Duration(seconds: json['time_taken_seconds'] ?? 0),
     );
   }
@@ -64,6 +74,7 @@ class QuizResult {
   // Convertit le QuizResult en JSON
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'questions': questions.map((q) => q.toJson()).toList(),
       'user_answers': userAnswers,
       'score': score,

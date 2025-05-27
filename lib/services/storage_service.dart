@@ -5,22 +5,41 @@ import '../models/quiz_result.dart';
 class StorageService {
   static const String _scoresKey = 'quiz_scores';
   static const String _settingsKey = 'quiz_settings';
-  
+
   // Sauvegarde un résultat de quiz
   Future<void> saveQuizResult(QuizResult result) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final List<String> existingScores = prefs.getStringList(_scoresKey) ?? [];
-      
-      // Ajouter le nouveau résultat
-      existingScores.add(json.encode(result.toJson()));
-      
-      // Garder seulement les 50 derniers résultats pour éviter un stockage excessif
-      if (existingScores.length > 50) {
-        existingScores.removeRange(0, existingScores.length - 50);
+
+      // Vérifier si ce résultat existe déjà (basé sur l'ID)
+      final existingIds = <String>{};
+      final filteredScores = <String>[];
+
+      for (final scoreJson in existingScores) {
+        try {
+          final Map<String, dynamic> data = json.decode(scoreJson);
+          final String existingId = data['id'] ?? '';
+          if (existingId.isNotEmpty && !existingIds.contains(existingId)) {
+            existingIds.add(existingId);
+            filteredScores.add(scoreJson);
+          }
+        } catch (e) {
+          // Ignorer les résultats corrompus
+        }
       }
-      
-      await prefs.setStringList(_scoresKey, existingScores);
+
+      // Ajouter le nouveau résultat seulement s'il n'existe pas déjà
+      if (!existingIds.contains(result.id)) {
+        filteredScores.add(json.encode(result.toJson()));
+      }
+
+      // Garder seulement les 50 derniers résultats pour éviter un stockage excessif
+      if (filteredScores.length > 50) {
+        filteredScores.removeRange(0, filteredScores.length - 50);
+      }
+
+      await prefs.setStringList(_scoresKey, filteredScores);
     } catch (e) {
       throw Exception('Erreur lors de la sauvegarde du résultat: $e');
     }
@@ -31,7 +50,7 @@ class StorageService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final List<String> scoresJson = prefs.getStringList(_scoresKey) ?? [];
-      
+
       return scoresJson
           .map((scoreJson) {
             try {
@@ -55,19 +74,21 @@ class StorageService {
     try {
       final List<QuizResult> allResults = await getAllQuizResults();
       final Map<String, QuizResult> bestScores = {};
-      
+
       for (final result in allResults) {
         final String key = '${result.category}_${result.difficulty.value}';
-        
-        if (!bestScores.containsKey(key) || 
+
+        if (!bestScores.containsKey(key) ||
             result.percentage > bestScores[key]!.percentage) {
           bestScores[key] = result;
         }
       }
-      
+
       return bestScores;
     } catch (e) {
-      throw Exception('Erreur lors de la récupération des meilleurs scores: $e');
+      throw Exception(
+        'Erreur lors de la récupération des meilleurs scores: $e',
+      );
     }
   }
 
@@ -75,11 +96,13 @@ class StorageService {
   Future<QuizResult?> getBestOverallScore() async {
     try {
       final List<QuizResult> allResults = await getAllQuizResults();
-      
+
       if (allResults.isEmpty) return null;
-      
-      return allResults.reduce((current, next) => 
-          current.percentage > next.percentage ? current : next);
+
+      return allResults.reduce(
+        (current, next) =>
+            current.percentage > next.percentage ? current : next,
+      );
     } catch (e) {
       throw Exception('Erreur lors de la récupération du meilleur score: $e');
     }
@@ -110,11 +133,11 @@ class StorageService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final String? settingsJson = prefs.getString(_settingsKey);
-      
+
       if (settingsJson != null) {
         return json.decode(settingsJson);
       }
-      
+
       // Paramètres par défaut
       return {
         'sound_enabled': true,

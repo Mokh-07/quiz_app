@@ -4,6 +4,7 @@ import '../services/quiz_provider.dart';
 import '../models/quiz_result.dart';
 import '../models/category.dart';
 import '../utils/constants.dart';
+import '../utils/theme_helper.dart';
 import '../widgets/app_card.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -25,11 +26,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
         title: const Text(AppStrings.quizHistory),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: ThemeHelper.getPrimaryColor(context),
+        foregroundColor: ThemeHelper.getOnPrimaryColor(context),
         elevation: 0,
         actions: [
           Consumer<QuizProvider>(
@@ -68,17 +69,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.history, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.history,
+              size: 80,
+              color: ThemeHelper.getSecondaryColor(context),
+            ),
             const SizedBox(height: AppSizes.paddingLarge),
             Text(
               AppStrings.noHistoryAvailable,
-              style: AppTextStyles.headline3.copyWith(color: Colors.grey[600]),
+              style: ThemeHelper.getHeadlineStyle(context),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSizes.paddingMedium),
             Text(
               'Commencez votre premier quiz pour voir vos résultats ici',
-              style: AppTextStyles.bodyText2,
+              style: ThemeHelper.getBodyStyle(context),
               textAlign: TextAlign.center,
             ),
           ],
@@ -112,7 +117,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Expanded(
                 child: Text(
                   result.category,
-                  style: AppTextStyles.headline3,
+                  style: ThemeHelper.getHeadlineStyle(context),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -124,17 +129,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 decoration: BoxDecoration(
                   color:
                       result.isPassed
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : AppColors.error.withValues(alpha: 0.1),
+                          ? ThemeHelper.getCorrectAnswerColor(
+                            context,
+                          ).withValues(alpha: 0.1)
+                          : ThemeHelper.getIncorrectAnswerColor(
+                            context,
+                          ).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(
                     AppSizes.borderRadiusSmall,
                   ),
                 ),
                 child: Text(
                   '${result.percentage.toStringAsFixed(0)}%',
-                  style: AppTextStyles.bodyText1.copyWith(
+                  style: ThemeHelper.getBodyStyle(context).copyWith(
                     color:
-                        result.isPassed ? AppColors.success : AppColors.error,
+                        result.isPassed
+                            ? ThemeHelper.getCorrectAnswerColor(context)
+                            : ThemeHelper.getIncorrectAnswerColor(context),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -147,7 +158,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               _buildInfoChip(
                 Icons.quiz,
                 '${result.score}/${result.totalQuestions}',
-                AppColors.primary,
+                ThemeHelper.getPrimaryColor(context),
               ),
               const SizedBox(width: AppSizes.paddingSmall),
               _buildInfoChip(
@@ -159,28 +170,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
               _buildInfoChip(
                 Icons.timer,
                 _formatDuration(result.timeTaken),
-                AppColors.secondary,
+                ThemeHelper.getSecondaryColor(context),
               ),
             ],
           ),
           const SizedBox(height: AppSizes.paddingSmall),
-          Text(_formatDate(result.completedAt), style: AppTextStyles.caption),
+          Text(
+            _formatDate(result.completedAt),
+            style: ThemeHelper.getSecondaryTextStyle(context),
+          ),
           const SizedBox(height: AppSizes.paddingMedium),
           Row(
             children: [
               Expanded(
                 child: Text(
                   result.evaluation,
-                  style: AppTextStyles.bodyText1.copyWith(
+                  style: ThemeHelper.getBodyStyle(context).copyWith(
                     fontWeight: FontWeight.w500,
                     color:
-                        result.isPassed ? AppColors.success : AppColors.error,
+                        result.isPassed
+                            ? ThemeHelper.getCorrectAnswerColor(context)
+                            : ThemeHelper.getIncorrectAnswerColor(context),
                   ),
                 ),
               ),
               Icon(
                 result.isPassed ? Icons.check_circle : Icons.cancel,
-                color: result.isPassed ? AppColors.success : AppColors.error,
+                color:
+                    result.isPassed
+                        ? ThemeHelper.getCorrectAnswerColor(context)
+                        : ThemeHelper.getIncorrectAnswerColor(context),
                 size: AppSizes.iconSize,
               ),
             ],
@@ -207,10 +226,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const SizedBox(width: 4),
           Text(
             text,
-            style: AppTextStyles.caption.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+            style: ThemeHelper.getSecondaryTextStyle(
+              context,
+            ).copyWith(color: color, fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ],
       ),
@@ -220,11 +238,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Color _getDifficultyColor(Difficulty difficulty) {
     switch (difficulty) {
       case Difficulty.easy:
-        return AppColors.success;
+        return Colors.green;
       case Difficulty.medium:
-        return AppColors.warning;
+        return Colors.orange;
       case Difficulty.hard:
-        return AppColors.error;
+        return Colors.red;
     }
   }
 
@@ -269,7 +287,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Navigator.of(context).pop();
                   _clearHistory(quizProvider);
                 },
-                style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                style: TextButton.styleFrom(
+                  foregroundColor: ThemeHelper.getIncorrectAnswerColor(context),
+                ),
                 child: const Text('Effacer'),
               ),
             ],
@@ -282,9 +302,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
       await quizProvider.clearHistory();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Historique effacé avec succès'),
-            backgroundColor: AppColors.success,
+          SnackBar(
+            content: const Text('Historique effacé avec succès'),
+            backgroundColor: ThemeHelper.getCorrectAnswerColor(context),
           ),
         );
       }
@@ -293,7 +313,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur lors de l\'effacement: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: ThemeHelper.getIncorrectAnswerColor(context),
           ),
         );
       }

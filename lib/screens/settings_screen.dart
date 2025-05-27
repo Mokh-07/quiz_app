@@ -168,7 +168,10 @@ class SettingsScreen extends StatelessWidget {
       builder:
           (context) => Dialog(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
+              constraints: BoxConstraints(
+                maxWidth: 400,
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
               child: const AudioTestWidget(),
             ),
           ),

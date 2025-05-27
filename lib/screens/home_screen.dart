@@ -317,15 +317,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: AppCard(
                         gradient: AppColors.accentGradient,
                         child: CustomButton(
-                          text: AppLocalizations.of(context).about,
-                          icon: IconHelper.getUIIcon('about'),
-                          onPressed: () => _navigateToAbout(),
+                          text: 'Scores',
+                          icon: Icons.emoji_events,
+                          onPressed: () => _navigateToHighScores(),
                           backgroundColor: Colors.transparent,
                           textColor: Colors.white,
                         ),
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSizes.paddingMedium),
+        AnimationConfiguration.staggeredList(
+          position: 3,
+          duration: const Duration(milliseconds: 600),
+          child: SlideAnimation(
+            verticalOffset: 50.0,
+            child: FadeInAnimation(
+              child: SizedBox(
+                height: 100,
+                child: AppCard(
+                  gradient: AppColors.primaryGradient,
+                  child: CustomButton(
+                    text: AppLocalizations.of(context).about,
+                    icon: IconHelper.getUIIcon('about'),
+                    onPressed: () => _navigateToAbout(),
+                    backgroundColor: Colors.transparent,
+                    textColor: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -474,6 +497,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const HistoryScreen()));
+  }
+
+  void _navigateToHighScores() {
+    Navigator.of(context).pushNamed('/high-scores');
   }
 
   void _navigateToAbout() {

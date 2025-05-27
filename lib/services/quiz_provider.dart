@@ -4,10 +4,12 @@ import '../models/category.dart';
 import '../models/quiz_result.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
+import 'high_score_service.dart';
 
 class QuizProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   final StorageService _storageService = StorageService();
+  HighScoreService? _highScoreService;
 
   // État des catégories
   List<QuizCategory> _categories = [];
@@ -55,6 +57,11 @@ class QuizProvider extends ChangeNotifier {
 
   List<QuizResult> get quizHistory => _quizHistory;
   bool get resultsLoading => _resultsLoading;
+
+  // Initialise le service des meilleurs scores
+  void setHighScoreService(HighScoreService highScoreService) {
+    _highScoreService = highScoreService;
+  }
 
   // Charge les catégories depuis l'API
   Future<void> loadCategories() async {
@@ -282,7 +289,7 @@ class QuizProvider extends ChangeNotifier {
   }
 
   // Calcule et sauvegarde le résultat du quiz
-  Future<QuizResult> completeQuiz() async {
+  Future<(QuizResult, bool)> completeQuiz() async {
     if (_quizStartTime == null) {
       throw Exception('Quiz non démarré');
     }
@@ -321,7 +328,17 @@ class QuizProvider extends ChangeNotifier {
     // Sauvegarde du résultat
     await _storageService.saveQuizResult(result);
 
-    return result;
+    // Vérification et mise à jour des meilleurs scores
+    bool isNewRecord = false;
+    if (_highScoreService != null) {
+      try {
+        isNewRecord = await _highScoreService!.checkAndUpdateHighScore(result);
+      } catch (e) {
+        debugPrint('Erreur lors de la mise à jour des meilleurs scores: $e');
+      }
+    }
+
+    return (result, isNewRecord);
   }
 
   // Charge l'historique des quiz
