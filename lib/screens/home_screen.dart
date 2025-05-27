@@ -88,13 +88,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       : IconHelper.getUIIcon('theme_dark'),
                 ),
                 onPressed: () async {
-                  // Basculer entre les modes
+                  // Basculer simplement entre clair et sombre
                   final newMode =
-                      settings.themeMode == ThemeMode.light
-                          ? ThemeMode.dark
-                          : settings.themeMode == ThemeMode.dark
-                          ? ThemeMode.system
-                          : ThemeMode.light;
+                      settings.isDarkMode ? ThemeMode.light : ThemeMode.dark;
 
                   await settings.setThemeMode(newMode);
 
@@ -103,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     enabled: settings.vibrationEnabled,
                   );
                 },
-                tooltip: 'Changer le thème',
+                tooltip: settings.isDarkMode ? 'Mode clair' : 'Mode sombre',
               );
             },
           ),
