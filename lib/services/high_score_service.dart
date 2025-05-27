@@ -1,20 +1,32 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/high_score.dart';
 import '../models/quiz_result.dart';
 
-/// Service pour gérer les meilleurs scores localement
+/// Service pour gérer les meilleurs scores localement par utilisateur
 class HighScoreService extends ChangeNotifier {
   static const String _highScoresKey = 'high_scores';
 
   late SharedPreferences _prefs;
   Map<String, HighScore> _highScores = {};
   bool _isInitialized = false;
+  String? _currentUserId; // ID de l'utilisateur Firebase actuel
 
   // Getters
   Map<String, HighScore> get highScores => Map.unmodifiable(_highScores);
   bool get isInitialized => _isInitialized;
+
+  /// Définit l'utilisateur actuel pour le stockage des données
+  void setCurrentUser(String? userId) {
+    if (_currentUserId != userId) {
+      _currentUserId = userId;
+      // Recharger les scores pour ce nouvel utilisateur
+      if (_isInitialized) {
+        _loadHighScores();
+      }
+    }
+  }
 
   /// Initialise le service avec les scores sauvegardés
   Future<void> initialize() async {
@@ -24,14 +36,32 @@ class HighScoreService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Obtient la clé de stockage pour l'utilisateur actuel
+  String _getUserStorageKey() {
+    if (_currentUserId != null) {
+      return '${_highScoresKey}_$_currentUserId';
+    }
+    return _highScoresKey; // Fallback pour les utilisateurs non connectés
+  }
+
   /// Charge les meilleurs scores depuis le stockage local
   Future<void> _loadHighScores() async {
     try {
-      final String? scoresJson = _prefs.getString(_highScoresKey);
+      final String storageKey = _getUserStorageKey();
+      final String? scoresJson = _prefs.getString(storageKey);
       if (scoresJson != null) {
         final Map<String, dynamic> scoresMap = json.decode(scoresJson);
         _highScores = scoresMap.map(
           (key, value) => MapEntry(key, HighScore.fromJson(value)),
+        );
+      } else {
+        _highScores = {};
+      }
+      notifyListeners();
+
+      if (kDebugMode) {
+        print(
+          '✅ Scores chargés pour utilisateur: $_currentUserId (${_highScores.length} scores)',
         );
       }
     } catch (e) {
@@ -43,10 +73,15 @@ class HighScoreService extends ChangeNotifier {
   /// Sauvegarde les meilleurs scores dans le stockage local
   Future<void> _saveHighScores() async {
     try {
+      final String storageKey = _getUserStorageKey();
       final Map<String, dynamic> scoresMap = _highScores.map(
         (key, score) => MapEntry(key, score.toJson()),
       );
-      await _prefs.setString(_highScoresKey, json.encode(scoresMap));
+      await _prefs.setString(storageKey, json.encode(scoresMap));
+
+      if (kDebugMode) {
+        print('✅ Scores sauvegardés pour utilisateur: $_currentUserId');
+      }
     } catch (e) {
       debugPrint('Erreur lors de la sauvegarde des scores: $e');
     }

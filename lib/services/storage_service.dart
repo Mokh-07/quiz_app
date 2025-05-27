@@ -6,11 +6,27 @@ class StorageService {
   static const String _scoresKey = 'quiz_scores';
   static const String _settingsKey = 'quiz_settings';
 
+  String? _currentUserId; // ID de l'utilisateur Firebase actuel
+
+  /// Définit l'utilisateur actuel pour le stockage des données
+  void setCurrentUser(String? userId) {
+    _currentUserId = userId;
+  }
+
+  /// Obtient la clé de stockage pour l'utilisateur actuel
+  String _getUserStorageKey() {
+    if (_currentUserId != null) {
+      return '${_scoresKey}_$_currentUserId';
+    }
+    return _scoresKey; // Fallback pour les utilisateurs non connectés
+  }
+
   // Sauvegarde un résultat de quiz
   Future<void> saveQuizResult(QuizResult result) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<String> existingScores = prefs.getStringList(_scoresKey) ?? [];
+      final String storageKey = _getUserStorageKey();
+      final List<String> existingScores = prefs.getStringList(storageKey) ?? [];
 
       // Vérifier si ce résultat existe déjà (basé sur l'ID)
       final existingIds = <String>{};
@@ -39,7 +55,7 @@ class StorageService {
         filteredScores.removeRange(0, filteredScores.length - 50);
       }
 
-      await prefs.setStringList(_scoresKey, filteredScores);
+      await prefs.setStringList(storageKey, filteredScores);
     } catch (e) {
       throw Exception('Erreur lors de la sauvegarde du résultat: $e');
     }
@@ -49,7 +65,8 @@ class StorageService {
   Future<List<QuizResult>> getAllQuizResults() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<String> scoresJson = prefs.getStringList(_scoresKey) ?? [];
+      final String storageKey = _getUserStorageKey();
+      final List<String> scoresJson = prefs.getStringList(storageKey) ?? [];
 
       return scoresJson
           .map((scoreJson) {
@@ -112,7 +129,8 @@ class StorageService {
   Future<void> clearAllResults() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_scoresKey);
+      final String storageKey = _getUserStorageKey();
+      await prefs.remove(storageKey);
     } catch (e) {
       throw Exception('Erreur lors de la suppression des résultats: $e');
     }

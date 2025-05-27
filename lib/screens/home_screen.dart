@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+// Suppression de flutter_staggered_animations pour de meilleures performances
 import '../services/quiz_provider.dart';
 import '../services/settings_service.dart';
 
@@ -122,35 +122,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             opacity: _fadeAnimation,
             child: SlideTransition(
               position: _slideAnimation,
-              child: AnimationLimiter(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSizes.paddingLarge),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: AppSizes.paddingMedium),
-                      AnimationConfiguration.staggeredList(
-                        position: 0,
-                        duration: const Duration(milliseconds: 600),
-                        child: SlideAnimation(
-                          verticalOffset: 50.0,
-                          child: FadeInAnimation(child: _buildHeader()),
-                        ),
-                      ),
-                      const SizedBox(height: AppSizes.paddingMedium),
-                      _buildMenuOptions(),
-                      const SizedBox(height: AppSizes.paddingMedium),
-                      AnimationConfiguration.staggeredList(
-                        position: 3,
-                        duration: const Duration(milliseconds: 600),
-                        child: SlideAnimation(
-                          verticalOffset: 50.0,
-                          child: FadeInAnimation(child: _buildFooter()),
-                        ),
-                      ),
-                      const SizedBox(height: AppSizes.paddingMedium),
-                    ],
-                  ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSizes.paddingLarge),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: AppSizes.paddingMedium),
+                    _buildHeader(),
+                    const SizedBox(height: AppSizes.paddingMedium),
+                    _buildMenuOptions(),
+                    const SizedBox(height: AppSizes.paddingMedium),
+                    _buildFooter(),
+                    const SizedBox(height: AppSizes.paddingMedium),
+                  ],
                 ),
               ),
             ),
@@ -265,90 +249,68 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildMenuOptions() {
     return Column(
       children: [
-        AnimationConfiguration.staggeredList(
-          position: 1,
-          duration: const Duration(milliseconds: 600),
-          child: SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(
-              child: SizedBox(
-                height: 120,
+        // Bouton principal - Commencer le quiz
+        SizedBox(
+          height: 120,
+          child: AppCard(
+            gradient: AppColors.primaryGradient,
+            child: CustomButton(
+              text: AppLocalizations.of(context).startQuiz,
+              icon: IconHelper.getUIIcon('start'),
+              onPressed: () => _navigateToQuizSetup(),
+              backgroundColor: Colors.transparent,
+              textColor: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSizes.paddingMedium),
+
+        // Boutons secondaires - Historique et Scores
+        SizedBox(
+          height: 100,
+          child: Row(
+            children: [
+              Expanded(
                 child: AppCard(
-                  gradient: AppColors.primaryGradient,
+                  gradient: AppColors.secondaryGradient,
                   child: CustomButton(
-                    text: AppLocalizations.of(context).startQuiz,
-                    icon: IconHelper.getUIIcon('start'),
-                    onPressed: () => _navigateToQuizSetup(),
+                    text: AppLocalizations.of(context).viewHistory,
+                    icon: IconHelper.getUIIcon('history'),
+                    onPressed: () => _navigateToHistory(),
                     backgroundColor: Colors.transparent,
                     textColor: Colors.white,
                   ),
                 ),
               ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSizes.paddingMedium),
-        AnimationConfiguration.staggeredList(
-          position: 2,
-          duration: const Duration(milliseconds: 600),
-          child: SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(
-              child: SizedBox(
-                height: 100,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: AppCard(
-                        gradient: AppColors.secondaryGradient,
-                        child: CustomButton(
-                          text: AppLocalizations.of(context).viewHistory,
-                          icon: IconHelper.getUIIcon('history'),
-                          onPressed: () => _navigateToHistory(),
-                          backgroundColor: Colors.transparent,
-                          textColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSizes.paddingMedium),
-                    Expanded(
-                      child: AppCard(
-                        gradient: AppColors.accentGradient,
-                        child: CustomButton(
-                          text: 'Scores',
-                          icon: Icons.emoji_events,
-                          onPressed: () => _navigateToHighScores(),
-                          backgroundColor: Colors.transparent,
-                          textColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSizes.paddingMedium),
-        AnimationConfiguration.staggeredList(
-          position: 3,
-          duration: const Duration(milliseconds: 600),
-          child: SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(
-              child: SizedBox(
-                height: 100,
+              const SizedBox(width: AppSizes.paddingMedium),
+              Expanded(
                 child: AppCard(
-                  gradient: AppColors.primaryGradient,
+                  gradient: AppColors.accentGradient,
                   child: CustomButton(
-                    text: AppLocalizations.of(context).about,
-                    icon: IconHelper.getUIIcon('about'),
-                    onPressed: () => _navigateToAbout(),
+                    text: 'Scores',
+                    icon: Icons.emoji_events,
+                    onPressed: () => _navigateToHighScores(),
                     backgroundColor: Colors.transparent,
                     textColor: Colors.white,
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSizes.paddingMedium),
+
+        // Bouton À propos
+        SizedBox(
+          height: 100,
+          child: AppCard(
+            gradient: AppColors.primaryGradient,
+            child: CustomButton(
+              text: AppLocalizations.of(context).about,
+              icon: IconHelper.getUIIcon('about'),
+              onPressed: () => _navigateToAbout(),
+              backgroundColor: Colors.transparent,
+              textColor: Colors.white,
             ),
           ),
         ),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/firebase_auth_service.dart';
 import '../services/settings_service.dart';
 import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_card.dart';
+import '../widgets/auth_mode_selector.dart';
 import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 
@@ -27,6 +29,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool?
+  _useFirebase; // null = pas encore choisi, true = Firebase, false = Statique
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -72,7 +76,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          // Bouton de toggle thème
+          // Bouton de toggle thème optimisé
           Consumer<SettingsService>(
             builder: (context, settings, child) {
               return IconButton(
@@ -103,11 +107,19 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                   const SizedBox(height: AppSizes.paddingXLarge),
                   _buildHeader(),
                   const SizedBox(height: AppSizes.paddingXLarge),
-                  _buildAuthForm(),
-                  const SizedBox(height: AppSizes.paddingLarge),
-                  _buildToggleButton(),
-                  const SizedBox(height: AppSizes.paddingMedium),
-                  _buildGuestButton(),
+
+                  // Afficher le sélecteur de mode ou le formulaire d'auth
+                  if (_useFirebase == null) ...[
+                    _buildModeSelector(),
+                  ] else ...[
+                    _buildAuthForm(),
+                    const SizedBox(height: AppSizes.paddingLarge),
+                    _buildToggleButton(),
+                    const SizedBox(height: AppSizes.paddingMedium),
+                    _buildGuestButton(),
+                    const SizedBox(height: AppSizes.paddingMedium),
+                    _buildBackToModeSelector(),
+                  ],
                 ],
               ),
             ),
@@ -386,46 +398,106 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     setState(() => _isLoading = true);
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-
-      if (_isLogin) {
-        // Connexion → aller directement à l'application
-        await authService.signIn(
-          _emailController.text.trim(),
-          _passwordController.text,
+      if (_useFirebase == true) {
+        // Utiliser Firebase Authentication
+        final firebaseAuthService = Provider.of<FirebaseAuthService>(
+          context,
+          listen: false,
         );
 
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+        // Vérifier que Firebase est initialisé
+        if (!firebaseAuthService.isSignedIn &&
+            firebaseAuthService.currentUser == null) {
+          // Firebase est prêt
+        }
+
+        if (_isLogin) {
+          // Connexion Firebase → aller directement à l'application
+          await firebaseAuthService.signIn(
+            _emailController.text.trim(),
+            _passwordController.text,
           );
+
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          }
+        } else {
+          // Inscription Firebase → retourner au mode connexion
+          await firebaseAuthService.signUp(
+            _emailController.text.trim(),
+            _passwordController.text,
+            _nameController.text.trim(),
+          );
+
+          // Déconnecter l'utilisateur après inscription
+          await firebaseAuthService.signOut();
+
+          if (mounted) {
+            // Basculer vers le mode connexion
+            setState(() {
+              _isLogin = true;
+              _clearFields();
+            });
+
+            // Message de succès
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(context).accountCreatedSuccess,
+                ),
+                backgroundColor: ThemeHelper.getCorrectAnswerColor(context),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
         }
       } else {
-        // Inscription → retourner au mode connexion
-        await authService.signUp(
-          _emailController.text.trim(),
-          _passwordController.text,
-          _nameController.text.trim(),
-        );
+        // Utiliser l'authentification statique
+        final authService = Provider.of<AuthService>(context, listen: false);
 
-        // Déconnecter l'utilisateur après inscription
-        await authService.signOut();
-
-        if (mounted) {
-          // Basculer vers le mode connexion
-          setState(() {
-            _isLogin = true;
-            _clearFields();
-          });
-
-          // Message de succès
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).accountCreatedSuccess),
-              backgroundColor: ThemeHelper.getCorrectAnswerColor(context),
-              duration: const Duration(seconds: 3),
-            ),
+        if (_isLogin) {
+          // Connexion statique → aller directement à l'application
+          await authService.signIn(
+            _emailController.text.trim(),
+            _passwordController.text,
           );
+
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          }
+        } else {
+          // Inscription statique → retourner au mode connexion
+          await authService.signUp(
+            _emailController.text.trim(),
+            _passwordController.text,
+            _nameController.text.trim(),
+          );
+
+          // Déconnecter l'utilisateur après inscription
+          await authService.signOut();
+
+          if (mounted) {
+            // Basculer vers le mode connexion
+            setState(() {
+              _isLogin = true;
+              _clearFields();
+            });
+
+            // Message de succès
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(context).accountCreatedSuccess,
+                ),
+                backgroundColor: ThemeHelper.getCorrectAnswerColor(context),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
         }
       }
     } catch (e) {
@@ -450,6 +522,34 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => const HomeScreen()),
+    );
+  }
+
+  Widget _buildModeSelector() {
+    return AuthModeSelector(
+      onModeSelected: (bool useFirebase) {
+        setState(() {
+          _useFirebase = useFirebase;
+        });
+      },
+    );
+  }
+
+  Widget _buildBackToModeSelector() {
+    return TextButton.icon(
+      onPressed: () {
+        setState(() {
+          _useFirebase = null;
+          _clearFields();
+        });
+      },
+      icon: const Icon(Icons.arrow_back),
+      label: const Text('Changer de mode d\'authentification'),
+      style: TextButton.styleFrom(
+        foregroundColor: Theme.of(
+          context,
+        ).colorScheme.onSurface.withValues(alpha: 0.7),
+      ),
     );
   }
 }

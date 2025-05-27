@@ -325,8 +325,10 @@ class QuizProvider extends ChangeNotifier {
       timeTaken: timeTaken,
     );
 
-    // Sauvegarde du résultat
+    // Sauvegarde du résultat localement
     await _storageService.saveQuizResult(result);
+
+    // Résultat sauvegardé localement pour l'utilisateur actuel
 
     // Vérification et mise à jour des meilleurs scores
     bool isNewRecord = false;
@@ -386,7 +388,22 @@ class QuizProvider extends ChangeNotifier {
   // Supprime tout l'historique
   Future<void> clearHistory() async {
     await _storageService.clearAllResults();
+
+    // Historique supprimé pour l'utilisateur actuel
+
     _quizHistory.clear();
     notifyListeners();
+  }
+
+  /// Définit l'utilisateur actuel pour le stockage des données
+  void setCurrentUser(String? userId) {
+    _storageService.setCurrentUser(userId);
+    // Recharger l'historique pour ce nouvel utilisateur
+    if (userId != null) {
+      loadQuizHistory();
+    } else {
+      _quizHistory.clear();
+      notifyListeners();
+    }
   }
 }
