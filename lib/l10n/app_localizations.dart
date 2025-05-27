@@ -114,6 +114,30 @@ abstract class AppLocalizations {
   String get developer;
   String get contact;
   String get visitWebsite;
+
+  // Authentication
+  String get welcomeBack;
+  String get createAccount;
+  String get signIn;
+  String get signUp;
+  String get fullName;
+  String get email;
+  String get password;
+  String get confirmPassword;
+  String get pleaseEnterName;
+  String get pleaseEnterEmail;
+  String get pleaseEnterValidEmail;
+  String get pleaseEnterPassword;
+  String get passwordTooShort;
+  String get pleaseConfirmPassword;
+  String get passwordsDoNotMatch;
+  String get dontHaveAccount;
+  String get alreadyHaveAccount;
+  String get continueAsGuest;
+  String get signOut;
+  String get profile;
+  String get account;
+  String get accountCreatedSuccess;
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

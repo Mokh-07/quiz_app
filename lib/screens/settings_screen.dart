@@ -5,10 +5,12 @@ import '../services/settings_service.dart';
 
 import '../services/haptic_service.dart';
 import '../services/simple_audio_service.dart';
+import '../services/auth_service.dart';
 import '../utils/constants.dart';
 import '../widgets/app_card.dart';
 import '../widgets/audio_test_widget.dart';
 import '../l10n/app_localizations.dart';
+import '../screens/auth_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -43,6 +45,12 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: AppSizes.paddingMedium),
                 _buildAudioCard(context, settings),
 
+                const SizedBox(height: AppSizes.paddingLarge),
+
+                // Section Compte
+                _buildSectionTitle(context, 'Compte'),
+                const SizedBox(height: AppSizes.paddingMedium),
+                _buildAccountCard(context),
                 const SizedBox(height: AppSizes.paddingLarge),
 
                 // Section Actions
@@ -174,6 +182,56 @@ class SettingsScreen extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildAccountCard(BuildContext context) {
+    return Consumer<AuthService>(
+      builder: (context, authService, child) {
+        final user = authService.currentUser;
+
+        return AppCard(
+          child: Column(
+            children: [
+              // Informations utilisateur
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: Text(
+                    user?.initials ?? 'U',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                title: Text(user?.displayName ?? 'Utilisateur'),
+                subtitle: Text(
+                  user?.isGuest == true
+                      ? 'Mode invité'
+                      : user?.email ?? 'Pas d\'email',
+                ),
+              ),
+
+              const Divider(),
+
+              // Bouton de déconnexion
+              ListTile(
+                leading: Icon(
+                  Icons.logout,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  'Se déconnecter',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                subtitle: const Text('Retourner à l\'écran de connexion'),
+                onTap: () => _showSignOutDialog(context, authService),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -349,6 +407,44 @@ class SettingsScreen extends StatelessWidget {
                   }
                 },
                 child: const Text('Réinitialiser'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showSignOutDialog(BuildContext context, AuthService authService) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Se déconnecter'),
+            content: const Text(
+              'Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder à l\'application.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Annuler'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Fermer le dialog
+
+                  // Déconnexion
+                  await authService.signOut();
+
+                  // Navigation vers l'écran d'authentification
+                  if (context.mounted) {
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/auth', (route) => false);
+                  }
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: const Text('Se déconnecter'),
               ),
             ],
           ),

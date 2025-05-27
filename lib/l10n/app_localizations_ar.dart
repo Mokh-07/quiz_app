@@ -252,4 +252,73 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get visitWebsite => 'زيارة الموقع';
+
+  // Authentication
+  @override
+  String get welcomeBack => 'مرحباً بعودتك!';
+
+  @override
+  String get createAccount => 'أنشئ حسابك للبدء';
+
+  @override
+  String get signIn => 'تسجيل الدخول';
+
+  @override
+  String get signUp => 'إنشاء حساب';
+
+  @override
+  String get fullName => 'الاسم الكامل';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get confirmPassword => 'تأكيد كلمة المرور';
+
+  @override
+  String get pleaseEnterName => 'يرجى إدخال اسمك';
+
+  @override
+  String get pleaseEnterEmail => 'يرجى إدخال بريدك الإلكتروني';
+
+  @override
+  String get pleaseEnterValidEmail => 'يرجى إدخال بريد إلكتروني صحيح';
+
+  @override
+  String get pleaseEnterPassword => 'يرجى إدخال كلمة المرور';
+
+  @override
+  String get passwordTooShort =>
+      'يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل';
+
+  @override
+  String get pleaseConfirmPassword => 'يرجى تأكيد كلمة المرور';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمات المرور غير متطابقة';
+
+  @override
+  String get dontHaveAccount => 'ليس لديك حساب؟';
+
+  @override
+  String get alreadyHaveAccount => 'لديك حساب بالفعل؟';
+
+  @override
+  String get continueAsGuest => 'المتابعة كضيف';
+
+  @override
+  String get signOut => 'تسجيل الخروج';
+
+  @override
+  String get profile => 'الملف الشخصي';
+
+  @override
+  String get account => 'الحساب';
+
+  @override
+  String get accountCreatedSuccess =>
+      'تم إنشاء الحساب بنجاح! يرجى تسجيل الدخول.';
 }

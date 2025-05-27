@@ -7,6 +7,8 @@ import 'services/haptic_service.dart';
 import 'services/simple_audio_service.dart';
 import 'services/localization_service.dart';
 import 'services/high_score_service.dart';
+import 'services/auth_service.dart';
+import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/high_scores_screen.dart';
 import 'theme/app_themes.dart';
@@ -22,6 +24,9 @@ void main() async {
   final highScoreService = HighScoreService();
   await highScoreService.initialize();
 
+  final authService = AuthService();
+  await authService.initialize();
+
   await HapticService().initialize();
   await SimpleAudioService().initialize();
   await LocalizationService().initialize();
@@ -35,6 +40,7 @@ void main() async {
       settingsService: settingsService,
       highScoreService: highScoreService,
       quizProvider: quizProvider,
+      authService: authService,
     ),
   );
 }
@@ -43,12 +49,14 @@ class QuizApp extends StatelessWidget {
   final SettingsService settingsService;
   final HighScoreService highScoreService;
   final QuizProvider quizProvider;
+  final AuthService authService;
 
   const QuizApp({
     super.key,
     required this.settingsService,
     required this.highScoreService,
     required this.quizProvider,
+    required this.authService,
   });
 
   @override
@@ -58,10 +66,11 @@ class QuizApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: quizProvider),
         ChangeNotifierProvider.value(value: settingsService),
         ChangeNotifierProvider.value(value: highScoreService),
+        ChangeNotifierProvider.value(value: authService),
         ChangeNotifierProvider(create: (_) => LocalizationService()),
       ],
-      child: Consumer2<SettingsService, LocalizationService>(
-        builder: (context, settings, localization, child) {
+      child: Consumer3<SettingsService, LocalizationService, AuthService>(
+        builder: (context, settings, localization, auth, child) {
           return MaterialApp(
             title: 'Quiz App',
             debugShowCheckedModeBanner: false,
@@ -77,9 +86,14 @@ class QuizApp extends StatelessWidget {
             ],
             supportedLocales: AppLocalizations.supportedLocales,
             // Routes nommées pour une navigation plus robuste
-            initialRoute: '/',
+            home:
+                auth.isLoading
+                    ? const _LoadingScreen()
+                    : auth.isAuthenticated
+                    ? const HomeScreen()
+                    : const AuthScreen(),
             routes: {
-              '/': (context) => const HomeScreen(),
+              '/auth': (context) => const AuthScreen(),
               '/home': (context) => const HomeScreen(),
               '/high-scores': (context) => const HighScoresScreen(),
             },
@@ -125,6 +139,28 @@ class QuizApp extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+/// Écran de chargement simple pendant l'initialisation de l'authentification
+class _LoadingScreen extends StatelessWidget {
+  const _LoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 24),
+            Text('Chargement...', style: TextStyle(fontSize: 16)),
+          ],
+        ),
       ),
     );
   }

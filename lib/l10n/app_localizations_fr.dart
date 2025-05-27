@@ -253,4 +253,73 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get visitWebsite => 'Visiter le site web';
+
+  // Authentication
+  @override
+  String get welcomeBack => 'Bon retour !';
+
+  @override
+  String get createAccount => 'Créez votre compte pour commencer';
+
+  @override
+  String get signIn => 'Se connecter';
+
+  @override
+  String get signUp => 'S\'inscrire';
+
+  @override
+  String get fullName => 'Nom complet';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Mot de passe';
+
+  @override
+  String get confirmPassword => 'Confirmer le mot de passe';
+
+  @override
+  String get pleaseEnterName => 'Veuillez entrer votre nom';
+
+  @override
+  String get pleaseEnterEmail => 'Veuillez entrer votre email';
+
+  @override
+  String get pleaseEnterValidEmail => 'Veuillez entrer un email valide';
+
+  @override
+  String get pleaseEnterPassword => 'Veuillez entrer votre mot de passe';
+
+  @override
+  String get passwordTooShort =>
+      'Le mot de passe doit contenir au moins 6 caractères';
+
+  @override
+  String get pleaseConfirmPassword => 'Veuillez confirmer votre mot de passe';
+
+  @override
+  String get passwordsDoNotMatch => 'Les mots de passe ne correspondent pas';
+
+  @override
+  String get dontHaveAccount => 'Vous n\'avez pas de compte ?';
+
+  @override
+  String get alreadyHaveAccount => 'Vous avez déjà un compte ?';
+
+  @override
+  String get continueAsGuest => 'Continuer en tant qu\'invité';
+
+  @override
+  String get signOut => 'Se déconnecter';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get account => 'Compte';
+
+  @override
+  String get accountCreatedSuccess =>
+      'Compte créé avec succès ! Veuillez vous connecter.';
 }

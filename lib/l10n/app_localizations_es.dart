@@ -253,4 +253,73 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get visitWebsite => 'Visitar sitio web';
+
+  // Authentication
+  @override
+  String get welcomeBack => '¡Bienvenido de vuelta!';
+
+  @override
+  String get createAccount => 'Crea tu cuenta para comenzar';
+
+  @override
+  String get signIn => 'Iniciar sesión';
+
+  @override
+  String get signUp => 'Registrarse';
+
+  @override
+  String get fullName => 'Nombre completo';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get confirmPassword => 'Confirmar contraseña';
+
+  @override
+  String get pleaseEnterName => 'Por favor ingresa tu nombre';
+
+  @override
+  String get pleaseEnterEmail => 'Por favor ingresa tu email';
+
+  @override
+  String get pleaseEnterValidEmail => 'Por favor ingresa un email válido';
+
+  @override
+  String get pleaseEnterPassword => 'Por favor ingresa tu contraseña';
+
+  @override
+  String get passwordTooShort =>
+      'La contraseña debe tener al menos 6 caracteres';
+
+  @override
+  String get pleaseConfirmPassword => 'Por favor confirma tu contraseña';
+
+  @override
+  String get passwordsDoNotMatch => 'Las contraseñas no coinciden';
+
+  @override
+  String get dontHaveAccount => '¿No tienes una cuenta?';
+
+  @override
+  String get alreadyHaveAccount => '¿Ya tienes una cuenta?';
+
+  @override
+  String get continueAsGuest => 'Continuar como invitado';
+
+  @override
+  String get signOut => 'Cerrar sesión';
+
+  @override
+  String get profile => 'Perfil';
+
+  @override
+  String get account => 'Cuenta';
+
+  @override
+  String get accountCreatedSuccess =>
+      '¡Cuenta creada con éxito! Por favor inicia sesión.';
 }
