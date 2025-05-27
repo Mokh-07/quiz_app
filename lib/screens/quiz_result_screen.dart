@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/quiz_result.dart';
 import '../services/quiz_provider.dart';
+import '../services/settings_service.dart';
 import '../services/simple_audio_service.dart';
 import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
@@ -75,7 +76,10 @@ class _QuizResultScreenState extends State<QuizResultScreen>
       // Jouer le son de quiz terminé
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
-          SimpleAudioService().playCompleteSound();
+          final settings = Provider.of<SettingsService>(context, listen: false);
+          SimpleAudioService().playCompleteSound(
+            enabled: settings.soundEnabled,
+          );
         }
       });
 

@@ -88,9 +88,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       : IconHelper.getUIIcon('theme_dark'),
                 ),
                 onPressed: () async {
-                  // Basculer simplement entre clair et sombre
+                  // Basculer simplement entre clair et sombre (ignore le mode système)
                   final newMode =
-                      settings.isDarkMode ? ThemeMode.light : ThemeMode.dark;
+                      settings.themeMode == ThemeMode.dark
+                          ? ThemeMode.light
+                          : ThemeMode.dark;
 
                   await settings.setThemeMode(newMode);
 

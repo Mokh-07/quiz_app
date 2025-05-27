@@ -115,13 +115,17 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
           await HapticService().successVibration(
             enabled: settings.vibrationEnabled,
           );
-          await SimpleAudioService().playCorrectSound();
+          await SimpleAudioService().playCorrectSound(
+            enabled: settings.soundEnabled,
+          );
         } else {
           // Réponse incorrecte
           await HapticService().errorVibration(
             enabled: settings.vibrationEnabled,
           );
-          await SimpleAudioService().playWrongSound();
+          await SimpleAudioService().playWrongSound(
+            enabled: settings.soundEnabled,
+          );
         }
       } else {
         // Temps écoulé - vibration d'avertissement

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 
 import '../services/haptic_service.dart';
+import '../services/simple_audio_service.dart';
 import '../utils/constants.dart';
 import '../widgets/app_card.dart';
 import '../widgets/audio_test_widget.dart';
@@ -34,6 +35,13 @@ class SettingsScreen extends StatelessWidget {
                 _buildSectionTitle(context, 'Vibrations'),
                 const SizedBox(height: AppSizes.paddingMedium),
                 _buildVibrationCard(context, settings),
+
+                const SizedBox(height: AppSizes.paddingLarge),
+
+                // Section Audio
+                _buildSectionTitle(context, 'Audio'),
+                const SizedBox(height: AppSizes.paddingMedium),
+                _buildAudioCard(context, settings),
 
                 const SizedBox(height: AppSizes.paddingLarge),
 
@@ -127,6 +135,41 @@ class SettingsScreen extends StatelessWidget {
                 'Essayer les différents types de vibrations',
               ),
               onTap: () => _showVibrationTestDialog(context, settings),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAudioCard(BuildContext context, SettingsService settings) {
+    return AppCard(
+      child: Column(
+        children: [
+          SwitchListTile(
+            secondary: Icon(
+              settings.soundEnabled ? Icons.volume_up : Icons.volume_off,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: const Text('Effets sonores'),
+            subtitle: const Text('Sons de feedback lors des interactions'),
+            value: settings.soundEnabled,
+            onChanged: (bool value) async {
+              await settings.setSoundEnabled(value);
+
+              // Son de test si activé
+              if (value) {
+                SimpleAudioService().playCorrectSound();
+              }
+            },
+          ),
+          if (settings.soundEnabled) ...[
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.music_note),
+              title: const Text('Tester les sons'),
+              subtitle: const Text('Essayer les différents effets sonores'),
+              onTap: () => _showAudioTestDialog(context),
             ),
           ],
         ],

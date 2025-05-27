@@ -5,17 +5,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsService extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
   static const String _vibrationEnabledKey = 'vibration_enabled';
+  static const String _soundEnabledKey = 'sound_enabled';
 
   late SharedPreferences _prefs;
 
   // État des paramètres
   ThemeMode _themeMode = ThemeMode.system;
   bool _vibrationEnabled = true;
+  bool _soundEnabled = true;
   bool _isInitialized = false;
 
   // Getters
   ThemeMode get themeMode => _themeMode;
   bool get vibrationEnabled => _vibrationEnabled;
+  bool get soundEnabled => _soundEnabled;
   bool get isInitialized => _isInitialized;
 
   bool get isDarkMode {
@@ -42,6 +45,9 @@ class SettingsService extends ChangeNotifier {
 
     // Charger les préférences de vibration
     _vibrationEnabled = _prefs.getBool(_vibrationEnabledKey) ?? true;
+
+    // Charger les préférences de son
+    _soundEnabled = _prefs.getBool(_soundEnabledKey) ?? true;
   }
 
   /// Change le mode de thème
@@ -62,13 +68,24 @@ class SettingsService extends ChangeNotifier {
     }
   }
 
+  /// Active/désactive les sons
+  Future<void> setSoundEnabled(bool enabled) async {
+    if (_soundEnabled != enabled) {
+      _soundEnabled = enabled;
+      await _prefs.setBool(_soundEnabledKey, enabled);
+      notifyListeners();
+    }
+  }
+
   /// Remet tous les paramètres à leurs valeurs par défaut
   Future<void> resetToDefaults() async {
     _themeMode = ThemeMode.system;
     _vibrationEnabled = true;
+    _soundEnabled = true;
 
     await _prefs.setInt(_themeKey, _themeMode.index);
     await _prefs.setBool(_vibrationEnabledKey, _vibrationEnabled);
+    await _prefs.setBool(_soundEnabledKey, _soundEnabled);
 
     notifyListeners();
   }

@@ -57,17 +57,20 @@ class SimpleAudioService {
   }
 
   /// Joue le son de réponse correcte
-  Future<void> playCorrectSound() async {
+  Future<void> playCorrectSound({bool enabled = true}) async {
+    if (!enabled) return;
     await _playSound('correct.mp3');
   }
 
   /// Joue le son de réponse incorrecte
-  Future<void> playWrongSound() async {
+  Future<void> playWrongSound({bool enabled = true}) async {
+    if (!enabled) return;
     await _playSound('wrong.mp3');
   }
 
   /// Joue le son de quiz terminé
-  Future<void> playCompleteSound() async {
+  Future<void> playCompleteSound({bool enabled = true}) async {
+    if (!enabled) return;
     await _playSound('complete.mp3');
   }
 
