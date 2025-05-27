@@ -203,7 +203,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
             opacity: _fadeAnimation,
             child: SlideTransition(
               position: _slideAnimation,
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSizes.paddingLarge),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -212,7 +212,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
                     const SizedBox(height: AppSizes.paddingLarge),
                     _buildQuestionCard(currentQuestion),
                     const SizedBox(height: AppSizes.paddingLarge),
-                    Expanded(child: _buildAnswerOptions(currentQuestion)),
+                    _buildAnswerOptions(currentQuestion),
                     const SizedBox(height: AppSizes.paddingLarge),
                     // Le bouton "Question suivante" a été supprimé - transition automatique
                   ],
@@ -427,66 +427,7 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // En-tête avec type de question
-          Row(
-            children: [
-              Icon(
-                Icons.radio_button_checked,
-                color: ThemeHelper.getPrimaryColor(context),
-                size: AppSizes.iconSizeSmall,
-              ),
-              const SizedBox(width: AppSizes.paddingSmall),
-              Text(
-                'Multiple Choice', // Sera traduit plus tard
-                style: ThemeHelper.getBodyStyle(context).copyWith(
-                  color: ThemeHelper.getPrimaryColor(context),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSizes.paddingSmall),
-
-          // Instruction claire
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.paddingMedium,
-              vertical: AppSizes.paddingSmall,
-            ),
-            decoration: BoxDecoration(
-              color: ThemeHelper.getPrimaryColor(
-                context,
-              ).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppSizes.borderRadiusSmall),
-              border: Border.all(
-                color: ThemeHelper.getPrimaryColor(
-                  context,
-                ).withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.touch_app,
-                  color: ThemeHelper.getPrimaryColor(context),
-                  size: AppSizes.iconSizeSmall,
-                ),
-                const SizedBox(width: AppSizes.paddingSmall),
-                Text(
-                  'Choose ONE answer', // Sera traduit plus tard
-                  style: ThemeHelper.getBodyStyle(context).copyWith(
-                    color: ThemeHelper.getPrimaryColor(context),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: AppSizes.paddingMedium),
-
-          // Question
+          // Question directement sans en-tête
           Text(
             question.question,
             style: ThemeHelper.getHeadlineStyle(
@@ -505,204 +446,165 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // En-tête des options
-        Padding(
-          padding: const EdgeInsets.only(bottom: AppSizes.paddingMedium),
-          child: Row(
-            children: [
-              Icon(
-                Icons.list_alt,
-                color: ThemeHelper.getSecondaryColor(context),
-                size: AppSizes.iconSizeSmall,
-              ),
-              const SizedBox(width: AppSizes.paddingSmall),
-              Text(
-                'Answer Options (${question.allAnswers.length})', // Sera traduit plus tard
-                style: ThemeHelper.getBodyStyle(context).copyWith(
-                  color: ThemeHelper.getSecondaryColor(context),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Liste des options sans scroll
+        ...List.generate(question.allAnswers.length, (index) {
+          final String answer = question.allAnswers[index];
+          final bool isSelected = _selectedAnswer == answer;
+          final bool isCorrect = question.isCorrectAnswer(answer);
+          final String optionLabel =
+              index < optionLabels.length
+                  ? optionLabels[index]
+                  : '${index + 1}';
 
-        // Liste des options
-        Expanded(
-          child: ListView.builder(
-            itemCount: question.allAnswers.length,
-            itemBuilder: (context, index) {
-              final String answer = question.allAnswers[index];
-              final bool isSelected = _selectedAnswer == answer;
-              final bool isCorrect = question.isCorrectAnswer(answer);
-              final String optionLabel =
-                  index < optionLabels.length
-                      ? optionLabels[index]
-                      : '${index + 1}';
+          Color backgroundColor = ThemeHelper.getUnselectedAnswerColor(context);
+          Color textColor = ThemeHelper.getOnSurfaceColor(context);
+          Color labelBackgroundColor = ThemeHelper.getSurfaceColor(context);
+          Color labelTextColor = ThemeHelper.getOnSurfaceColor(context);
 
-              Color backgroundColor = ThemeHelper.getUnselectedAnswerColor(
+          if (_showResult) {
+            if (isCorrect) {
+              backgroundColor = ThemeHelper.getCorrectAnswerColor(context);
+              textColor = Colors.white;
+              labelBackgroundColor = ThemeHelper.getCorrectAnswerColor(context);
+              labelTextColor = Colors.white;
+            } else if (isSelected && !isCorrect) {
+              backgroundColor = ThemeHelper.getIncorrectAnswerColor(context);
+              textColor = Colors.white;
+              labelBackgroundColor = ThemeHelper.getIncorrectAnswerColor(
                 context,
               );
-              Color textColor = ThemeHelper.getOnSurfaceColor(context);
-              Color labelBackgroundColor = ThemeHelper.getSurfaceColor(context);
-              Color labelTextColor = ThemeHelper.getOnSurfaceColor(context);
+              labelTextColor = Colors.white;
+            }
+          } else if (isSelected) {
+            backgroundColor = ThemeHelper.getPrimaryColor(context);
+            textColor = ThemeHelper.getOnPrimaryColor(context);
+            labelBackgroundColor = ThemeHelper.getPrimaryColor(context);
+            labelTextColor = ThemeHelper.getOnPrimaryColor(context);
+          }
 
-              if (_showResult) {
-                if (isCorrect) {
-                  backgroundColor = ThemeHelper.getCorrectAnswerColor(context);
-                  textColor = Colors.white;
-                  labelBackgroundColor = ThemeHelper.getCorrectAnswerColor(
-                    context,
-                  );
-                  labelTextColor = Colors.white;
-                } else if (isSelected && !isCorrect) {
-                  backgroundColor = ThemeHelper.getIncorrectAnswerColor(
-                    context,
-                  );
-                  textColor = Colors.white;
-                  labelBackgroundColor = ThemeHelper.getIncorrectAnswerColor(
-                    context,
-                  );
-                  labelTextColor = Colors.white;
-                }
-              } else if (isSelected) {
-                backgroundColor = ThemeHelper.getPrimaryColor(context);
-                textColor = ThemeHelper.getOnPrimaryColor(context);
-                labelBackgroundColor = ThemeHelper.getPrimaryColor(context);
-                labelTextColor = ThemeHelper.getOnPrimaryColor(context);
-              }
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSizes.paddingMedium),
-                child: GestureDetector(
-                  onTap: _showResult ? null : () => _selectAnswer(answer),
-                  child: AnimatedContainer(
-                    duration: AppDurations.short,
-                    padding: const EdgeInsets.all(AppSizes.paddingMedium),
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      borderRadius: BorderRadius.circular(
-                        AppSizes.borderRadius,
-                      ),
-                      border: Border.all(
-                        color:
-                            isSelected
-                                ? ThemeHelper.getPrimaryColor(context)
-                                : ThemeHelper.getBorderColor(context),
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow:
-                          isSelected
-                              ? [
-                                BoxShadow(
-                                  color: ThemeHelper.getPrimaryColor(
-                                    context,
-                                  ).withValues(alpha: 0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                              : null,
-                    ),
-                    child: Row(
-                      children: [
-                        // Lettre de l'option (A, B, C, D)
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: labelBackgroundColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color:
-                                  isSelected
-                                      ? ThemeHelper.getOnPrimaryColor(context)
-                                      : ThemeHelper.getBorderColor(context),
-                              width: 1,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              optionLabel,
-                              style: ThemeHelper.getBodyStyle(context).copyWith(
-                                color: labelTextColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: AppSizes.paddingMedium),
-
-                        // Texte de la réponse
-                        Expanded(
-                          child: Text(
-                            answer,
-                            style: ThemeHelper.getBodyStyle(context).copyWith(
-                              color: textColor,
-                              fontWeight:
-                                  isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                              height: 1.3,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-
-                        // Indicateur de sélection/résultat
-                        if (isSelected && !_showResult)
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check,
-                              size: 16,
-                              color: ThemeHelper.getPrimaryColor(context),
-                            ),
-                          ),
-
-                        if (_showResult && isCorrect)
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: ThemeHelper.getCorrectAnswerColor(context),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check_circle,
-                              color: Colors.white,
-                              size: AppSizes.iconSize,
-                            ),
-                          ),
-
-                        if (_showResult && isSelected && !isCorrect)
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: ThemeHelper.getIncorrectAnswerColor(
-                                context,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.cancel,
-                              color: Colors.white,
-                              size: AppSizes.iconSize,
-                            ),
-                          ),
-                      ],
-                    ),
+          return Padding(
+            padding: const EdgeInsets.only(bottom: AppSizes.paddingMedium),
+            child: GestureDetector(
+              onTap: _showResult ? null : () => _selectAnswer(answer),
+              child: AnimatedContainer(
+                duration: AppDurations.short,
+                padding: const EdgeInsets.all(AppSizes.paddingMedium),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+                  border: Border.all(
+                    color:
+                        isSelected
+                            ? ThemeHelper.getPrimaryColor(context)
+                            : ThemeHelper.getBorderColor(context),
+                    width: isSelected ? 2 : 1,
                   ),
+                  boxShadow:
+                      isSelected
+                          ? [
+                            BoxShadow(
+                              color: ThemeHelper.getPrimaryColor(
+                                context,
+                              ).withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                          : null,
                 ),
-              );
-            },
-          ),
-        ),
+                child: Row(
+                  children: [
+                    // Lettre de l'option (A, B, C, D)
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: labelBackgroundColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? ThemeHelper.getOnPrimaryColor(context)
+                                  : ThemeHelper.getBorderColor(context),
+                          width: 1,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          optionLabel,
+                          style: ThemeHelper.getBodyStyle(context).copyWith(
+                            color: labelTextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: AppSizes.paddingMedium),
+
+                    // Texte de la réponse
+                    Expanded(
+                      child: Text(
+                        answer,
+                        style: ThemeHelper.getBodyStyle(context).copyWith(
+                          color: textColor,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
+                          height: 1.3,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+
+                    // Indicateur de sélection/résultat
+                    if (isSelected && !_showResult)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.check,
+                          size: 16,
+                          color: ThemeHelper.getPrimaryColor(context),
+                        ),
+                      ),
+
+                    if (_showResult && isCorrect)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: ThemeHelper.getCorrectAnswerColor(context),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.check_circle,
+                          color: Colors.white,
+                          size: AppSizes.iconSize,
+                        ),
+                      ),
+
+                    if (_showResult && isSelected && !isCorrect)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: ThemeHelper.getIncorrectAnswerColor(context),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.cancel,
+                          color: Colors.white,
+                          size: AppSizes.iconSize,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
       ],
     );
   }
@@ -746,13 +648,19 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
       final result = await quizProvider.completeQuiz();
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => QuizResultScreen(result: result),
-          ),
-        );
+        // Attendre un court délai pour s'assurer que l'état est stable
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => QuizResultScreen(result: result),
+            ),
+          );
+        }
       }
     } catch (e) {
+      debugPrint('Erreur lors de la navigation vers les résultats: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -760,6 +668,9 @@ class _QuizScreenState extends State<QuizScreen> with TickerProviderStateMixin {
             backgroundColor: ThemeHelper.getIncorrectAnswerColor(context),
           ),
         );
+
+        // En cas d'erreur, retourner à l'écran de configuration
+        Navigator.of(context).pop();
       }
     }
   }

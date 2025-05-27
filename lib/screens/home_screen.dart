@@ -125,12 +125,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: SlideTransition(
               position: _slideAnimation,
               child: AnimationLimiter(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSizes.paddingLarge),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: AppSizes.paddingXLarge),
+                      const SizedBox(height: AppSizes.paddingMedium),
                       AnimationConfiguration.staggeredList(
                         position: 0,
                         duration: const Duration(milliseconds: 600),
@@ -139,8 +139,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: FadeInAnimation(child: _buildHeader()),
                         ),
                       ),
-                      const SizedBox(height: AppSizes.paddingSmall),
-                      Expanded(child: _buildMenuOptions()),
+                      const SizedBox(height: AppSizes.paddingMedium),
+                      _buildMenuOptions(),
+                      const SizedBox(height: AppSizes.paddingMedium),
                       AnimationConfiguration.staggeredList(
                         position: 3,
                         duration: const Duration(milliseconds: 600),
@@ -149,6 +150,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: FadeInAnimation(child: _buildFooter()),
                         ),
                       ),
+                      const SizedBox(height: AppSizes.paddingMedium),
                     ],
                   ),
                 ),

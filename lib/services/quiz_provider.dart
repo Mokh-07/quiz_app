@@ -343,12 +343,27 @@ class QuizProvider extends ChangeNotifier {
 
   // Remet à zéro le quiz
   void resetQuiz() {
-    _questions.clear();
-    _userAnswers.clear();
-    _currentQuestionIndex = 0;
-    _quizError = null;
-    _quizStartTime = null;
-    notifyListeners();
+    try {
+      _questions.clear();
+      _userAnswers.clear();
+      _currentQuestionIndex = 0;
+      _quizError = null;
+      _quizStartTime = null;
+      _quizLoading = false;
+
+      // S'assurer que tous les listeners sont notifiés
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Erreur lors de la réinitialisation du quiz: $e');
+      // Forcer la réinitialisation même en cas d'erreur
+      _questions = [];
+      _userAnswers = [];
+      _currentQuestionIndex = 0;
+      _quizError = null;
+      _quizStartTime = null;
+      _quizLoading = false;
+      notifyListeners();
+    }
   }
 
   // Supprime tout l'historique

@@ -53,7 +53,52 @@ class QuizApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const HomeScreen(),
+            // Routes nommées pour une navigation plus robuste
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const HomeScreen(),
+              '/home': (context) => const HomeScreen(),
+            },
+            // Gestion d'erreur globale pour la navigation
+            onUnknownRoute: (settings) {
+              return MaterialPageRoute(
+                builder: (context) => const HomeScreen(),
+              );
+            },
+            // Gestionnaire d'erreur global
+            builder: (context, widget) {
+              ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+                return Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.red,
+                          size: 60,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Une erreur est survenue',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(
+                              context,
+                            ).pushNamedAndRemoveUntil('/', (route) => false);
+                          },
+                          child: const Text('Retour à l\'accueil'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              };
+              return widget!;
+            },
           );
         },
       ),

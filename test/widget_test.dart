@@ -9,11 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:quiz_app/main.dart';
+import 'package:quiz_app/services/settings_service.dart';
 
 void main() {
   testWidgets('Quiz app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const QuizApp());
+    await tester.pumpWidget(QuizApp(settingsService: SettingsService()));
 
     // Verify that our app loads correctly.
     expect(find.text('Bienvenue dans Quiz App'), findsOneWidget);

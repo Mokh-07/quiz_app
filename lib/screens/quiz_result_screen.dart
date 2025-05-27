@@ -7,7 +7,6 @@ import '../utils/constants.dart';
 import '../utils/theme_helper.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_card.dart';
-import 'home_screen.dart';
 import 'quiz_setup_screen.dart';
 
 class QuizResultScreen extends StatefulWidget {
@@ -447,22 +446,54 @@ class _QuizResultScreenState extends State<QuizResultScreen>
     return '${minutes}m ${seconds}s';
   }
 
-  void _playAgain() {
-    final quizProvider = Provider.of<QuizProvider>(context, listen: false);
-    quizProvider.resetQuiz();
+  void _playAgain() async {
+    try {
+      final quizProvider = Provider.of<QuizProvider>(context, listen: false);
+      quizProvider.resetQuiz();
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const QuizSetupScreen()),
-    );
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const QuizSetupScreen()),
+        );
+      }
+    } catch (e) {
+      debugPrint('Erreur lors du redémarrage du quiz: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du redémarrage: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _backToHome() {
-    final quizProvider = Provider.of<QuizProvider>(context, listen: false);
-    quizProvider.resetQuiz();
+  void _backToHome() async {
+    try {
+      final quizProvider = Provider.of<QuizProvider>(context, listen: false);
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-      (route) => false,
-    );
+      // Nettoyer l'état du quiz
+      quizProvider.resetQuiz();
+
+      // Attendre un court délai pour s'assurer que l'état est nettoyé
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (mounted) {
+        // Utiliser une navigation plus sûre
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    } catch (e) {
+      debugPrint('Erreur lors du retour à l\'accueil: $e');
+      if (mounted) {
+        // Fallback: essayer une navigation alternative
+        try {
+          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        } catch (fallbackError) {
+          // Dernière option: navigation simple
+          Navigator.of(context).pop();
+        }
+      }
+    }
   }
 }
