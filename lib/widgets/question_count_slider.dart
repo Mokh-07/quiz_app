@@ -64,6 +64,7 @@ class _QuestionCountSliderState extends State<QuestionCountSlider>
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(AppSizes.paddingLarge),
       decoration: BoxDecoration(
         gradient: ThemeHelper.getBackgroundGradient(context),
@@ -151,12 +152,21 @@ class _QuestionCountSliderState extends State<QuestionCountSlider>
                   ),
                 ),
                 // Slider transparent par-dessus
-                Slider(
-                  value: _currentValue,
-                  min: widget.minValue.toDouble(),
-                  max: widget.maxValue.toDouble(),
-                  divisions: widget.maxValue - widget.minValue,
-                  onChanged: _onSliderChanged,
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    trackHeight: 8,
+                    thumbShape: const CustomSliderThumb(),
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 20,
+                    ),
+                  ),
+                  child: Slider(
+                    value: _currentValue,
+                    min: widget.minValue.toDouble(),
+                    max: widget.maxValue.toDouble(),
+                    divisions: widget.maxValue - widget.minValue,
+                    onChanged: _onSliderChanged,
+                  ),
                 ),
               ],
             ),
@@ -179,61 +189,78 @@ class _QuestionCountSliderState extends State<QuestionCountSlider>
           const SizedBox(height: AppSizes.paddingMedium),
 
           // Suggestions rapides
-          Wrap(
-            spacing: AppSizes.paddingSmall,
-            runSpacing: AppSizes.paddingSmall,
-            children:
-                QuestionCounts.available.map((count) {
-                  final bool isSelected = _currentValue.round() == count;
-                  return GestureDetector(
-                        onTap: () => _onSliderChanged(count.toDouble()),
-                        child: AnimatedContainer(
-                          duration: AppDurations.short,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSizes.paddingMedium,
-                            vertical: AppSizes.paddingSmall,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient:
-                                isSelected
-                                    ? ThemeHelper.getPrimaryGradient(context)
-                                    : null,
-                            color:
-                                isSelected
-                                    ? null
-                                    : ThemeHelper.getUnselectedAnswerColor(
-                                      context,
-                                    ),
-                            borderRadius: BorderRadius.circular(
-                              AppSizes.borderRadius,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return Wrap(
+                spacing: AppSizes.paddingSmall,
+                runSpacing: AppSizes.paddingSmall,
+                alignment: WrapAlignment.center,
+                children:
+                    QuestionCounts.available.map((count) {
+                      final bool isSelected = _currentValue.round() == count;
+                      return GestureDetector(
+                            onTap: () => _onSliderChanged(count.toDouble()),
+                            child: AnimatedContainer(
+                              duration: AppDurations.short,
+                              constraints: BoxConstraints(
+                                maxWidth: (constraints.maxWidth - 40) / 6,
+                                minWidth: 35,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSizes.paddingSmall,
+                                vertical: AppSizes.paddingSmall,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient:
+                                    isSelected
+                                        ? ThemeHelper.getPrimaryGradient(
+                                          context,
+                                        )
+                                        : null,
+                                color:
+                                    isSelected
+                                        ? null
+                                        : ThemeHelper.getUnselectedAnswerColor(
+                                          context,
+                                        ),
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.borderRadius,
+                                ),
+                                border:
+                                    isSelected
+                                        ? null
+                                        : Border.all(
+                                          color: ThemeHelper.getBorderColor(
+                                            context,
+                                          ),
+                                        ),
+                              ),
+                              child: Text(
+                                count.toString(),
+                                style: ThemeHelper.getBodyStyle(
+                                  context,
+                                ).copyWith(
+                                  color:
+                                      isSelected
+                                          ? ThemeHelper.getOnPrimaryColor(
+                                            context,
+                                          )
+                                          : ThemeHelper.getOnSurfaceColor(
+                                            context,
+                                          ),
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                ),
+                              ),
                             ),
-                            border:
-                                isSelected
-                                    ? null
-                                    : Border.all(
-                                      color: ThemeHelper.getBorderColor(
-                                        context,
-                                      ),
-                                    ),
-                          ),
-                          child: Text(
-                            count.toString(),
-                            style: ThemeHelper.getBodyStyle(context).copyWith(
-                              color:
-                                  isSelected
-                                      ? ThemeHelper.getOnPrimaryColor(context)
-                                      : ThemeHelper.getOnSurfaceColor(context),
-                              fontWeight:
-                                  isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      )
-                      .animate(target: isSelected ? 1 : 0)
-                      .scale(duration: 200.ms, curve: Curves.elasticOut);
-                }).toList(),
+                          )
+                          .animate(target: isSelected ? 1 : 0)
+                          .scale(duration: 200.ms, curve: Curves.elasticOut);
+                    }).toList(),
+              );
+            },
           ),
         ],
       ),

@@ -171,7 +171,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             vertical: AppSizes.paddingMedium,
-                            horizontal: AppSizes.paddingSmall,
+                            horizontal: AppSizes.paddingXSmall,
                           ),
                           decoration: BoxDecoration(
                             color:
@@ -193,22 +193,29 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
                                       width: 1,
                                     ),
                           ),
-                          child: Text(
-                            DifficultyHelper.getDisplayName(
-                              context,
-                              difficulty,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              DifficultyHelper.getDisplayName(
+                                context,
+                                difficulty,
+                              ),
+                              style: ThemeHelper.getBodyStyle(context).copyWith(
+                                color:
+                                    isSelected
+                                        ? Colors.white
+                                        : ThemeHelper.getOnSurfaceColor(
+                                          context,
+                                        ),
+                                fontWeight:
+                                    isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            style: ThemeHelper.getBodyStyle(context).copyWith(
-                              color:
-                                  isSelected
-                                      ? Colors.white
-                                      : ThemeHelper.getOnSurfaceColor(context),
-                              fontWeight:
-                                  isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                            ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),

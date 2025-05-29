@@ -92,7 +92,7 @@ class HapticService {
       await HapticFeedback.selectionClick();
     } else {
       // Sur mobile, utiliser une vibration courte
-      await Vibration.vibrate(duration: 50);
+      await Vibration.vibrate(duration: 50,);
     }
   }
 
